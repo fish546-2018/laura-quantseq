@@ -16,17 +16,31 @@ Goals for this class:
 
 ## Directory structure: 
 
-### data: Original/raw unadulterated data files, or links to data files if >100MB  
+#### data 
+Original/raw unadulterated data files, or links to data files if >100MB  
 --> _test-data:_ Practice data from Katherine for pipeline developing   
 ----> oly_Trinityv2.txt: raw read counts mapped to each gene in an assembled transcriptome  
 ----> trinity_go_annotations.txt: the Gene Ontology annotations for mapped genes in the oly_Trinityv2.txt file. 
-### notebooks: RMarkdown or Jupyter notebooks of each step in processing and analysis. 
-### plots: Data plots   
-### references: Source code, papers, tutorials, etc  
+
+#### notebooks  
+RMarkdown or Jupyter notebooks of each step in processing and analysis. 
+
+#### plots  
+Data plots   
+
+#### references  
+Source code, papers, tutorials, etc  
 ----> DeSeq2_Oyster_Trinity-clean.ipynb: Katherine's notebook for DGE using DeSeq2 R program 
-### results: processed and/or analyzed data   
-### scripts: R or bash scripts   
-### laura-quantseq.Rproj: RMarkdown project file where all R scripts are executed   
+
+#### results
+Processed and/or analyzed data   
+
+#### scripts . 
+R or bash scripts   
+
+#### In this parent directory: 
+README.md . 
+laura-quantseq.Rproj: RMarkdown project file where all R scripts are executed   
 
 ## Project Timeline: 
 - Week 4: Hunt and gather. Read through [Misha Matz's lab resources](https://github.com/z0on/tag-based_RNAseq), plan the necessary steps I'll need to take to process QuantSeq data, identify programs/resources to accomplish each step. Identify pipeline to assemble transcriptome using just Puget Sound Oly RNASeq data.  
