@@ -35,11 +35,11 @@ Source code, papers, tutorials, etc
 #### results
 Processed and/or analyzed data   
 
-#### scripts . 
+#### scripts 
 R or bash scripts   
 
-#### In this parent directory: 
-README.md . 
+#### In this parent directory  
+README.md  
 laura-quantseq.Rproj: RMarkdown project file where all R scripts are executed   
 
 ## Project Timeline: 
