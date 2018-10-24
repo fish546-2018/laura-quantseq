@@ -1,0 +1,40 @@
+---
+title: "QuantSeq-Multivariate"
+output: html_document
+---
+
+Install libraries and source scripts 
+```{r}
+library(pastecs)
+library(vegan)
+source("../Multivariate-Stats/biostats.R")
+```
+
+Import tab file as dataframe. 
+```{r}
+data <- data.frame(read.table("data/test-data/oly_Trinityv2.txt", header = T, sep = "\t", fill = FALSE))
+print(paste("number of samples:", ncol(data), sep=" "))
+print(paste("number of genes in dataframe:", nrow(data), sep=" "))
+```
+
+Transpose dataframe so each row = a sample (aka "objects"), and each column = genes (aka "variables") 
+```{r}
+spedata <- read.csv("../Multivariate-Stats/MAHA_speciesabu.csv", header=T, row.names = 1) #class dataset to compare dataframe format etc. 
+
+data.t <- data.frame(t(data[1:500,])) #for testing purposes, get only the first 1000 genes 
+#data.t$state <- substring(rownames(data.t), 1,2) # extract state from sample code 
+#data.t$rep <- substring(rownames(data.t), 3,4) #extract replicate from sample code 
+```
+
+Remove genes that don't show up in any samples (why are they here?)
+```{r}
+100*(1/ncol(data)) #if just one sample had a gene, what would that % be? 
+data.ts <- drop.var(data.t, min.po = 1.25)
+print(paste("# of genes not present in samples & dropped:", ncol(data.t) - ncol(data.ts), sep=" "))
+```
+
+
+```{r}
+
+```
+
