@@ -157,6 +157,8 @@ p1 <- p1 + ylab("mean quality (sanger)") + theme_bw()
 print(p1)
 ```
 
+This plot shows quality of trimmed/untrimmed file against bp length for read #1 for lane identified with 0343 (file = CP-4Spl_S11_L004_R1_0343.fastq) 
+
 ![](RNASeq-screening_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
 ``` r
@@ -164,6 +166,8 @@ p2 <- ggplot(d.43.R2) + geom_line(aes(x=position, y=mean, linetype=trimmer))
 p2 <- p2 + ylab("mean quality (sanger)") + theme_bw()
 print(p2)
 ```
+
+Read #2 for the lane identified with 0343 (file = CP-4Spl_S11_L004_R2_0343.fastq) 
 
 ![](RNASeq-screening_files/figure-markdown_github/unnamed-chunk-6-2.png)
 
@@ -206,6 +210,8 @@ p3 <- p3 + ylab("mean quality (sanger)") + theme_bw()
 print(p3)
 ```
 
+This plot shows quality of trimmed/untrimmed file against bp length for read #1 for lane identified with 0348 (file = CP-4Spl_S11_L004_R1_0348.fastq) 
+
 ![](RNASeq-screening_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 ``` r
@@ -213,5 +219,7 @@ p4 <- ggplot(d.48.R2) + geom_line(aes(x=position, y=mean, linetype=trimmer))
 p4 <- p4 + ylab("mean quality (sanger)") + theme_bw()
 print(p4)
 ```
+
+read #2 for lane identified with 0348 (file = CP-4Spl_S11_L004_R1_0348.fastq) 
 
 ![](RNASeq-screening_files/figure-markdown_github/unnamed-chunk-7-2.png)
