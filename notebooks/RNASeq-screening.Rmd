@@ -1,8 +1,8 @@
 ---
 title: "RNASeq data screening"
-output:
-  md_document:
-    variant: markdown_github
+author: "Laura Spencer"
+date: "October 23rd, 2018"
+output: pdf_document
 ---
 
 ```{r}
@@ -112,3 +112,6 @@ p4 <- p4 + ylab("mean quality (sanger)") + theme_bw()
 print(p4)
 ```
 
+```{r}
+sessionInfo()
+```
