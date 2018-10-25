@@ -1,7 +1,7 @@
 
 SUMMARISING RUN PARAMETERS
 ==========================
-Input filename: ../data/CP-4Spl_S11_L004_R1_0343.fastq
+Input filename: ../data/CP-4Spl_S11_L004_R2_0348.fastq
 Trimming mode: paired-end
 Trim Galore version: 0.5.0
 Cutadapt version: 1.18
