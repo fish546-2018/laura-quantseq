@@ -1,8 +1,8 @@
 # laura-quantseq
 
-**Project:** _Carryover effects of parental low pH exposure in the Olympia oyster (Ostrea lurida)_  
+## _Carryover effects of parental low pH exposure in the Olympia oyster (Ostrea lurida)_  
 
-**Data:** Differential gene expression analysis in _O. lurida_ gonad and larvae using QuantSeq. 
+Differential gene expression analysis in _O. lurida_ gonad and larvae using QuantSeq. 
 
 This repo is dedicated to processing and analyzing QuantSeq data from Olympia oyster (_Ostrea lurida_) gonad and larvae, which is part of the 2016-2018 project investigating carryover effects of adult pH exposure on reproduction and the next generation. The broader project repo can be found here: [O.lurida_Stress](https://github.com/laurahspencer/O.lurida_Stress)  
 
