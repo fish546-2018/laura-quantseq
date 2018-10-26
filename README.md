@@ -13,6 +13,8 @@ Goals for this class:
   - 2) adaptor trimming, quality filtering and removal of PCR duplicates (?);    
   - 3) mapping against reference transcriptome;   
   - 4) deriving gene counts   
+  
+[Github issue](https://github.com/RobertsLab/project-olympia.oyster-genomic/issues/34#event-1497598684) with communications between Katherine Silliman and myself, explaining samples sent to her. 
 
 ## Directory structure: 
 
