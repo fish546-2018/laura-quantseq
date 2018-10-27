@@ -16,7 +16,7 @@ Goals for this class:
 
 ## Directory structure: 
 
-#### data 
+### data 
 Original/raw unadulterated data files, or links to data files if >100MB   
 --> test-data/ Practice data from Katherine for pipeline developing   
 ----> oly_Trinityv2.txt: raw read counts mapped to each gene in an assembled transcriptome   
@@ -27,23 +27,23 @@ Original/raw unadulterated data files, or links to data files if >100MB
 --> sickle-trimfq/  data that has been trimmed using `sickle` and `trimfq` programs (too large for GitHub)   
 --> trimgalore/  data that has veen trimmed using `trimgalore!`  (also too large)   
 
-#### notebooks  
+### notebooks  
 RMarkdown or Jupyter notebooks of each step in processing and analysis. 
 
-#### plots  
+### plots  
 Data plots   
 
-#### references  
+### references  
 Source code, papers, tutorials, etc  
 ----> DeSeq2_Oyster_Trinity-clean.ipynb: Katherine's notebook for DGE using DeSeq2 R program 
 
-#### results
+### results
 Processed and/or analyzed data   
 
-#### scripts 
+### scripts 
 R or bash scripts   
 
-#### In this parent directory  
+### In this parent directory  
 README.md  
 laura-quantseq.Rproj: RMarkdown project file where all R scripts are executed   
 
