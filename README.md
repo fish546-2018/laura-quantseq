@@ -13,16 +13,19 @@ Goals for this class:
   - 2) adaptor trimming, quality filtering and removal of PCR duplicates (?);    
   - 3) mapping against reference transcriptome;   
   - 4) deriving gene counts   
-  
-[Github issue](https://github.com/RobertsLab/project-olympia.oyster-genomic/issues/34#event-1497598684) with communications between Katherine Silliman and myself, explaining samples sent to her. 
 
 ## Directory structure: 
 
 #### data 
 Original/raw unadulterated data files, or links to data files if >100MB  
---> _test-data:_ Practice data from Katherine for pipeline developing   
+--> test-data/ Practice data from Katherine for pipeline developing   
 ----> oly_Trinityv2.txt: raw read counts mapped to each gene in an assembled transcriptome  
 ----> trinity_go_annotations.txt: the Gene Ontology annotations for mapped genes in the oly_Trinityv2.txt file. 
+--> fastqc/  
+----> trimmed/ fastqc reports from trimmed files 
+----> untrimmed/ fastqc reports from untrimmed files 
+--> sickle-trimfq/  data that has been trimmed using `sickle` and `trimfq` programs (too large for GitHub) 
+--> trimgalore/  data that has veen trimmed using `trimgalore!`  (also too large) 
 
 #### notebooks  
 RMarkdown or Jupyter notebooks of each step in processing and analysis. 
