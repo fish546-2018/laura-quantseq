@@ -1,4 +1,10 @@
-### Logged ont Mox and created directories in my username 
+### Denovo transcriptome assembly using Trinity, on Mox
+
+After inspecting my _O. lurida_ fastq files before/after trimming, I decided to do the transcriptome assembly on the untrimmed files and instead use the built-in Trinity program `trimmomatic`.  Today I learned how to navigate mox, I made some directories, customized a script for the Trinity assembly, and queued my assembly job.  I used a script created by sam, available on his [2018/09/19 notebook post](http://onsnetwork.org/kubu4/2018/09/19/transcriptome-assembly-olympia-oyster-rnaseq-data-with-trinity/).  
+
+Roberts lab has compiled lots of [helpful hyak/mox info](https://github.com/RobertsLab/hyak_mox). 
+
+### Logged onto Mox and created directories in my username 
 `ssh lhs3@mox.hyak.uw.edu` 
 
 Entered  password and authenticated using Duo 
