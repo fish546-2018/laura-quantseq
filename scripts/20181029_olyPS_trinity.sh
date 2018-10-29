@@ -1,6 +1,6 @@
 #!/bin/bash
 ## Job Name
-#SBATCH --job-name=20181030_olyPS_trinity
+#SBATCH --job-name=20181029_olyPS_trinity
 ## Allocation Definition 
 #SBATCH --account=srlab
 #SBATCH --partition=srlab
@@ -15,7 +15,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=lhs3@uw.edu
 ## Specify the working directory for this job
-#SBATCH --workdir=/gscratch/srlab/lhs3/20181030_trinity_olyPS_RNAseq
+#SBATCH --workdir=/gscratch/srlab/lhs3/
 
 # Load Python Mox module for Python module availability
 

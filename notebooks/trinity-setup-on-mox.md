@@ -62,7 +62,25 @@ I’m using a script that Sam made to run Trinity. I need to provide paths for m
 	[lhs3@mox2 scripts]$ ls /gscratch/srlab/programs/
 	[lhs3@mox2 scripts]$ /gscratch/srlab/programs/Trinity-v2.8.3/Trinity —help 
 
-I updated Sam’s script with my run info, and saved it in the scripts folder of my repo, called []()
+I updated Sam’s script with my run info, and saved it in the scripts folder of my repo, called [20181029_olyPS_trinity.sh](https://raw.githubusercontent.com/fish546-2018/laura-quantseq/master/scripts/20181029_olyPS_trinity.sh) 
+
+### Adding programs to path file on Mox 
+According to this [github issue]() I need to add programs to my bash path file. I did the following: 
+
+	[lhs3@mox2 ~]$ vi ~/.bashrc
+	
+Pasted the following, then hit `esc` and `:q` to save and exit `vi`.
+
+	# Custom PATH
+
+	export PATH="$PATH:\
+	/gscratch/srlab/programs/bowtie2-2.3.4.1-linux-x86_64:\
+	/gscratch/srlab/programs/anaconda3/bin/cutadapt:\
+	/gscratch/srlab/programs/FastQC:\
+	/gscratch/srlab/programs/jellyfish-2.2.10/bin:\
+	/gscratch/srlab/programs/salmon-0.11.2-linux_x86_64/bin:\
+	/gscratch/srlab/programs/samtools-1.9"
+
 
 ### Notes about running jobs on Mox: 
   * The gscratch/ folder is where srlab has all its programs stored, and it is huge so allows for large files. When you initially login to mox you are located in a subdirectory, in `/lusr/usr/`. To access gscratch, you must navigate using `cd /gscratch/srlab/`
