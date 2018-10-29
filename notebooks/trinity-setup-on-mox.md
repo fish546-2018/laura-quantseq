@@ -81,6 +81,73 @@ Pasted the following, then hit `esc` and `:q` to save and exit `vi`.
 	/gscratch/srlab/programs/salmon-0.11.2-linux_x86_64/bin:\
 	/gscratch/srlab/programs/samtools-1.9"
 
+### Downloaded and inspected trinity job script on mox 
+
+	
+	[lhs3@mox2 scripts]$ curl -O https://raw.githubusercontent.com/fish546-2018/laura-quantseq/master/scripts/20181029_olyPS_trinity.sh
+	  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+	                                 Dload  Upload   Total   Spent    Left  Speed
+	100  1296  100  1296    0     0   5519      0 --:--:-- --:--:-- --:--:--  5538
+
+	[lhs3@mox2 scripts]$ ls
+	20181029_olyPS_trinity.sh
+
+	[lhs3@mox2 scripts]$ cat 20181029_olyPS_trinity.sh 
+	#!/bin/bash
+	## Job Name
+	#SBATCH --job-name=20181029_olyPS_trinity
+	## Allocation Definition 
+	#SBATCH --account=srlab
+	#SBATCH --partition=srlab
+	## Resources
+	## Nodes
+	#SBATCH --nodes=1
+	## Walltime (days-hours:minutes:seconds format)
+	#SBATCH --time=120:00:00
+	## Memory per node
+	#SBATCH --mem=120G
+	##turn on e-mail notification
+	#SBATCH --mail-type=ALL
+	#SBATCH --mail-user=lhs3@uw.edu
+	## Specify the working directory for this job
+	#SBATCH --workdir=/gscratch/srlab/lhs3/
+	
+	# Load Python Mox module for Python module availability
+	
+	module load intel-python3_2017
+	
+	# Document programs in PATH (primarily for program version ID)
+	
+	date >> system_path.log
+	echo "" >> system_path.log
+	echo "System PATH for $SLURM_JOB_ID" >> system_path.log
+	echo "" >> system_path.log
+	printf "%0.s-" {1..10} >> system_path.log
+	echo ${PATH} | tr : \\n >> system_path.log
+	
+	
+	
+	# Run Trinity
+	/gscratch/srlab/programs/Trinity-v2.8.3/Trinity \
+	--trimmomatic \
+	--seqType fq \
+	--max_memory 500G \
+	--CPU 28 \
+	--output /gscratch/srlab/lhs3/outputs/trinity20181029/ \
+	--left \
+	/gscratch/srlab/lhs3/inputs/CP-4Spl_S11_L004_R1_0343.fastq.gz,\
+	/gscratch/srlab/lhs3/inputs/CP-4Spl_S11_L004_R1_0348.fastq.gz,\
+	--right \
+	/gscratch/srlab/lhs3/inputs/CP-4Spl_S11_L004_R2_0343.fastq.gz,\
+	/gscratch/srlab/lhs3/inputs/CP-4Spl_S11_L004_R2_0348.fastq.gz[lhs3@mox2 scripts]$ 
+	
+### Started trinity 
+Navigated back to my gscratch directory (just in case), and then executed my script; note I used `~/scripts/20181029_olyPS_trinity.sh` since ~ is my "home" user directory where the trinity script is located. 
+
+	[lhs3@mox2 scripts]$ cd /gscratch/srlab/lhs3/
+	[lhs3@mox2 lhs3]$ sbatch -p srlab -A srlab ~/scripts/20181029_olyPS_trinity.sh
+	Submitted batch job 410247
+
 
 ### Notes about running jobs on Mox: 
   * The gscratch/ folder is where srlab has all its programs stored, and it is huge so allows for large files. When you initially login to mox you are located in a subdirectory, in `/lusr/usr/`. To access gscratch, you must navigate using `cd /gscratch/srlab/`
