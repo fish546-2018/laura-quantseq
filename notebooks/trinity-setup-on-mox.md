@@ -19,7 +19,7 @@ Navigated to gscratch directory, where I will download my large fastq files, cre
 
 fastq files are located on Owl. 
 
-Owl IP: 128.95.149.83
+Owl IP: 128.95.149.83  
 http://owl.fish.washington.edu/nightingales/O_lurida/CP-4Spl_S11_L004_R1_0343.fastq.gz
 http://owl.fish.washington.edu/nightingales/O_lurida/CP-4Spl_S11_L004_R1_0348.fastq.gz
 http://owl.fish.washington.edu/nightingales/O_lurida/CP-4Spl_S11_L004_R2_0343.fastq.gz
