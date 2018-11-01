@@ -154,6 +154,17 @@ Navigated back to my gscratch directory (just in case), and then executed my scr
 	[lhs3@mox2 lhs3]$ sbatch -p srlab -A srlab ~/scripts/20181029_olyPS_trinity.sh
 	Submitted batch job 410247
 
+### Update 11/01/2018 
+After waiting in the queue my job started this morning, and immediately failed.  I inspected the output from the job, and it looks like the Trinity options weren't read: 
+
+	Must specify basic parameters:  ex. Trinity --seqType fq --single reads.fq --max_memory 10G  at
+	/gscratch/srlab/programs/Trinity-v2.8.3/Trinity line 895.
+
+I did a few things before re-running the job: 
+  - Moved the script over to my /gscratch directory (keep everything contained)  
+  - Removed a comma after my last forward strand read file (not sure if that caused an error, but it was incorrectly coded nonetheless)  
+  - Inspected the Trinity option list for any erroneous spaces. I didn't find any.  
+  I re-ran job (using script in new location), and no immediate error occurred!  
 
 ### Notes about running jobs on Mox: 
   * The gscratch/ folder is where srlab has all its programs stored, and it is huge so allows for large files. When you initially login to mox you are located in a subdirectory, in `/lusr/usr/`. To access gscratch, you must navigate using `cd /gscratch/srlab/`
