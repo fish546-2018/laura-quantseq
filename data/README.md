@@ -1,3 +1,5 @@
+Check out [this github issue](https://github.com/RobertsLab/project-olympia.oyster-genomic/issues/34#event-1497598684) with information on tissues sent to Katherine for sequencing. She did the library prep. 
+
 The raw RNA-Seq data from Katherine (for gonad transcriptome assembly) saved on Owl:
 https://github.com/RobertsLab/project-olympia.oyster-genomic/wiki/RNA-Seq-February-2018
 
