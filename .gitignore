@@ -4,4 +4,12 @@
 .Ruserdata
 *.fq
 *.fastq
+<<<<<<< HEAD
 .DS_Store
+=======
+*.fasta
+*.fasta.gz
+*.bam
+references/blastdb/
+results/transrate_results/read-evaluated/20181029-olurida-gonad-assembly/20181029-olurida-gonad-assembly
+>>>>>>> e902101ff1e21081f7c1c1126708b5dc4637dd9b

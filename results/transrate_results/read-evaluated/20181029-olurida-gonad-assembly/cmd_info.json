@@ -1,0 +1,14 @@
+{
+    "salmon_version": "0.6.0",
+    "libType": "IU",
+    "alignments": "/Users/lhs3/Desktop/laura-quantseq/results/transrate_results/read-evaluated/20181029-olurida-gonad-assembly/20181029-olurida-gonad-trimnorm-left.fq.20181029-olurida-gonad-trimnorm-right.fq.20181029-olurida-gonad-assembly.bam",
+    "targets": "/Users/lhs3/Desktop/laura-quantseq/results/trinity/20181029-olurida-gonad-assembly.fasta",
+    "threads": "8",
+    "sampleOut": [],
+    "sampleUnaligned": [],
+    "output": ".",
+    "useErrorModel": [],
+    "biasCorrect": [],
+    "noEffectiveLengthCorrection": [],
+    "useFSPD": []
+}
