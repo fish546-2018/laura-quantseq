@@ -15,7 +15,7 @@ source("../../../SAFS/Multivariate-Stats/biostats.R")
 
 Import tab file as dataframe. 
 ```{r}
-data <- data.frame(read.table("../data/test-data/oly_Trinityv2.txt", header = T, sep = "\t", fill = FALSE))
+data <- data.frame(read.table("../data/test-data/oly_Trinityv2.txt", header = T, stringsAsFactors = F, sep = "\t", fill = FALSE))
 print(paste("number of samples:", ncol(data), sep=" "))
 print(paste("number of genes in dataframe:", nrow(data), sep=" "))
 ```
@@ -85,11 +85,69 @@ outs <- mv.outliers(data.ts, method="euclidean", sd.limit = 3)
 outs #outlier samples, aka samples with average Euclidean distance >3 sd from mean of ave. Consider throwing these out. 
 ```
 
-boxplot of each sample for outliers. Not working since I have too many data points .... 
+boxplot of each sample for outliers. Look at only first 16 rows (I'll have 16 objects in my dataset)
 ```{r}
-str(data.ts)
-data.ts <- as.data.frame(data.ts)
-length(data.ts[1,])
-summary(as.vector(log(data.ts[1,c(1:1000)]+1)))
+data.stand.row <- as.data.frame(data.stand.row)
+for (i in 1:16) {
+ boxplot(log(as.numeric(data.stand.row[i,]))+1)         
+}
+```
+
+Perform PCA on z-transformed (by row) dataset 
+
+```{r}
+data.tsz <- data.stand(data.ts, method="standardize", margin="column", plot=F)
+hist(colMeans(data.tsz)) #how did standardizing do? 
+data.eucd <- vegdist(data.tsz, method="euclidean")
+nhclus.scree(data.eucd, max.k=16)
+```
+
+```{r}
+data.kmeans2 <- kmeans(data.eucd, centers=2, iter.max = 10000, nstart = 25)
+data.kmeans2
+data.kmeans3 <- kmeans(data.eucd, centers=3, iter.max = 10000, nstart = 25)
+data.kmeans3
+print(data.pam2 <- cluster::pam(data.eucd, k=2))
+print(data.pam3 <- cluster::pam(data.eucd, k=3))
+print(data.pam4 <- cluster::pam(data.eucd, k=4))
+plot(data.pam2)
+plot(data.pam3)
+plot(data.pam4)
+# non-hierarchical k-means or PAM clustering do not seem work on this dataset - not dividing into clusters 
+```
+
+Try NMDS
+
+```{r}
+hist(log(data.ts+1))
+data.ts.log <- log(data.ts + 1)
+print(nmds.2 <- metaMDS(data.ts.log, distance="bray", k=2, autotransform = FALSE, trymax=1000))
+```
+
+re-run nmds using k=3 (3 axes); stress is reduced to 7% (from)
+
+```{r}
+print(nmds.3 <- metaMDS(data.ts.log, distance="bray", k=3, autotransform = FALSE, trymax=1000))
+```
+
+```{r}
+nmds.scree(data.ts.log, distance = "bray", k=10, autotransform = F, trymax = 20) 
+```
+
+# 2 looks
+```{r}
+stressplot(nmds.2)
+```
+
+```{r}
+plot(nmds.2, type="n", xlim=c(-1,1), ylim=c(-1,1))
+text(nmds.2, labels=row.names(data.ts.log))
+ordiplot(nmds.2, choices = c(1,2), type="text", display = "sites")
+```
+
+```{r}
+head(log(data.stand.row+1))
+data.ts.log <- log(data.ts + 1)
+print(nmds.2 <- metaMDS(data.ts.log, distance="bray", k=2, autotransform = FALSE, trymax=1000))
 ```
 
