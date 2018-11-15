@@ -4,6 +4,7 @@
 .Ruserdata
 *.fq
 *.fastq
+*.fastq.gz
 <<<<<<< HEAD
 .DS_Store
 =======
