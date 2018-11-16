@@ -6,7 +6,7 @@
 *.fastq
 *.fastq.gz
 <<<<<<< HEAD
-.DS_Store
+*.DS_Store
 =======
 *.fasta
 *.fasta.gz
