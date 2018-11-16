@@ -1,2 +1,0 @@
-assembly,n_seqs,smallest,largest,n_bases,mean_len,n_under_200,n_over_1k,n_over_10k,n_with_orf,mean_orf_percent,n90,n70,n50,n30,n10,gc,bases_n,proportion_n,score,optimal_score,cutoff,weighted
-/Users/lhs3/Desktop/mox-transfer/2018-11-01/Trinity.fasta,181531,180,11860,154611548,851.64747,58,47893,12,49237,55.67257,321,808,1493,2355,3958,0.39737,0,0.0,NA,NA,NA,NA
