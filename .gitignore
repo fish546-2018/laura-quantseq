@@ -60,3 +60,4 @@ results/transrate_results/read-evaluated/20181029-olurida-gonad-assembly/2018102
 *.bt2
 *.fa
 *.fai
+*.fasta.kallisto_idx
