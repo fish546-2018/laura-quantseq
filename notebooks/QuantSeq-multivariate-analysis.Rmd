@@ -1,153 +1,149 @@
 ---
-title: "QuantSeq-Multivariate"
+title: "QuantSeq-Initial-Look"
 output: html_document
 ---
-
-# NOTE: my actual data will be different.  I will have 16 gonad samples (8 low pH, 8 ambient pH), and 8 total larvae samples (4 low pH, 4 ambient pH). 
-
-Install libraries and source scripts 
+### Install libraries and source scripts 
 ```{r}
-install.packages("pastecs")
 library(pastecs)
 library(vegan)
-source("../../../SAFS/Multivariate-Stats/biostats.R")
+source("references//biostats.R")
 ```
 
-Import tab file as dataframe. 
+### Import QuantSeq sample key
 ```{r}
-data <- data.frame(read.table("../data/test-data/oly_Trinityv2.txt", header = T, stringsAsFactors = F, sep = "\t", fill = FALSE))
-print(paste("number of samples:", ncol(data), sep=" "))
-print(paste("number of genes in dataframe:", nrow(data), sep=" "))
+key <- read.csv("data/quantseq_key.csv", header=T, na.strings = NA)
+key$stage <- as.factor(key$stage)
+key$temperature <- as.factor(key$temperature)
+key$filename <- as.character(key$filename)
 ```
 
-Transpose dataframe so each row = a sample (aka "objects"), and each column = genes (aka "variables") 
+### Import counts matrix file as dataframe. 
 ```{r}
-spedata <- read.csv("../../../SAFS/Multivariate-Stats/MAHA_speciesabu.csv", header=T, row.names = 1) #class dataset to compare dataframe format etc. 
-head(data)
-data.t <- t(data) #transform data to have each sample a row, each column a gene 
-#data.t <- data.frame(t(data[1:500,])) #for testing purposes, get only the first 1000 genes 
-#data.t$state <- substring(rownames(data.t), 1,2) # extract state from sample code 
-#data.t$rep <- substring(rownames(data.t), 3,4) #extract replicate from sample code 
+counts <- data.frame(read.table("results/kallisto/1129matrix-trans_counts.isoform.counts.matrix", header = T, stringsAsFactors = F, fill = FALSE))
+print(paste("number of samples:", ncol(counts), sep=" "))
+print(paste("number of genes in dataframe:", nrow(counts), sep=" "))
 ```
 
-Remove genes that don't show up in any samples (why are they here?)
+### Transpose dataframe so each row = a sample (aka "objects"), and each column = genes (aka "variables") 
 ```{r}
-100*(1/ncol(data)) #if just one sample had a gene, what would that % be? 1.25. Use below to drop. 
-data.ts <- drop.var(data.t, min.po = 1.25)
-print(paste("# of genes not present in samples & dropped:", ncol(data.t) - ncol(data.ts), sep=" "))
+counts.t <- t(counts) #transform data to have each sample a row, each column a gene 
 ```
 
+### Remove genes that don't show up in any samples (why are they here?)
 ```{r}
-stat.desc(data.ts)[1:3] # this is ridiculous, since each column is a gene. Not good for my data. Here I only pull the first 3 columns/genes 
+100*(1/nrow(counts.t)) #if just one sample had a gene, what would that % be? 4.1666. Use below to drop. 
+counts.ts <- drop.var(counts.t, min.po = 4)
+print(paste("# of genes not present in samples & dropped:", ncol(counts.t) - ncol(counts.ts), sep=" "))
+ncol(counts.ts) #number of contigs/genes in dataset 
 ```
 
-In how many samples does each gene occur? The first four plots portray the gene’ frequency of occurrence among samples in a number of different ways – either as an empirical cumulative distribution function (ECDF) of gene occurrence or as a histogram of gene occurrence. 
-
-What is the mean abundance of each gene when it occurs (not averaging zeros for samples where it is absent)? The fifth plot is an ECDF of gene mean abundance. X-axis is samples, ranked from 1-n in terms of mean gene abundance. 
-
-Is the mean abundance of genes correlated with the number of samples they occur in? The sixth plot is a scatter plot of frequency of occurrence against mean abundance. Is there any apparent relationship between the two? Are the widespread genes also generally more abundant? Are there many widespread genes that occur at low abundance? Conversely, are there genes much less widespread, but abundant where they occur?
-
-To see which dot is which gene, answer ‘y’ to the question on the console and then simply click on the point and the gene acronym (variable name) will appear next to the point. When you are done identifying points, simply right click “Stop” or press “Esc”.
-
-Is the total abundance of gene in a sample correlated with the number of gene in a sample? To answer this question, first it is instructive to look at the number of gene per sample. The eighth plot depicts the ECDF of sample richness. Are there any interesting patterns? For example, do most samples support an average number of gene, while only a few samples supporting either very few or very many gene? Or is the pattern different?
-
-Second, what is the pattern in the distribution of sample total abundance? The ninth plot is the ECDF of total sample abundance. How does it compare to the ECDF of sample richness?
-
-Finally, to answer the question on the relation between total abundance and number of gene/sample, the last plot is a scatter plot of the two variables. Is there is relationship between the number of gene per sample and the total abundance? Do gene-rich samples generally support a greater total abundance of gene as well?
-
+### Remove extraneous text from sample names
 ```{r}
-foa.plots(data.ts)
-```
-```{r}
-data.ts <- drop.var(data.ts, min.cv=5) # drop genes with very little variability between all samples, using coefficient variation <5
-```
-
-# replot foa.plots after dropping genes that have common occurrences across samples 
-
-```{r}
-foa.plots(data.ts)
+rownames(counts.ts) <- gsub("CP.KS.LibL.", "", rownames(counts.ts))
+rownames(counts.ts) <- gsub("_L006_R1_001", "", rownames(counts.ts))
+rownames(counts.ts) #confirm that it worked
 ```
 
-Cannot use traditional `uv.plots` or hist functions on each gene to inspect distributions, since I have thousands. How do I know if my data meets multivariate normality assumptions?  
+## Use foa.plots to visualize data a bit: 
+
+In how many samples does each gene occur? 
+  - The first four plots portray the gene’ frequency of occurrence among samples in a number of different ways – either as an empirical cumulative distribution function (ECDF) of gene occurrence or as a histogram of gene occurrence. 
+
+What is the mean abundance of each gene when it occurs (not averaging zeros for samples where it is absent)? 
+  - The fifth plot is an ECDF of gene mean abundance. X-axis is samples, ranked from 1-n in terms of mean gene abundance. 
+
+Is the mean abundance of genes correlated with the number of samples they occur in? 
+  - The sixth plot is a scatter plot of frequency of occurrence against mean abundance. Is there any apparent relationship between the two? Are the widespread genes also generally more abundant? Are there many widespread genes that occur at low abundance? Conversely, are there genes much less widespread, but abundant where they occur?
+
+Is the total abundance of gene in a sample correlated with the number of gene in a sample? To answer this question, first it is instructive to look at the number of gene per sample. 
+  - The eighth plot depicts the ECDF of sample richness. Are there any interesting patterns? For example, do most samples support an average number of gene, while only a few samples supporting either very few or very many gene? Or is the pattern different?
+
+Second, what is the pattern in the distribution of sample total abundance? 
+  - The ninth plot is the ECDF of total sample abundance. How does it compare to the ECDF of sample richness?
+
+Finally, to answer the question on the relation between total abundance and number of gene/sample ...
+  - The last plot is a scatter plot of the two variables. Is there is relationship between the number of gene per sample and the total abundance? Do gene-rich samples generally have a greater total abundance of those genes as well? 
 
 ```{r}
-data.stand.row <- data.stand(data.ts, method = "total", margin="row", plot = F) #standardize by row, so sum of gene counts within a sample = 1 (transformed to % each gene within a sample)
-data.stand.col <- data.stand(data.ts, method = "total", margin="column", plot=F) #standardize by column, so sum of genes across samples = 1 (transformed to compare frequency of each gene across samples)
-rowSums(data.stand.row) #all should equal 1 
-colSums(data.stand.col) #all should equal 1 
-data.stand.row[1:10, 1:50] #check out results. not sure if i want to standardize. 
+foa.plots(counts.ts)
 ```
-
-Outliers? 
+### Generate heat map for initial inspection
 
 ```{r}
-outs <- mv.outliers(data.ts, method="euclidean", sd.limit = 3)
-outs #outlier samples, aka samples with average Euclidean distance >3 sd from mean of ave. Consider throwing these out. 
+counts.ts.mat <- data.matrix(counts.ts)
+str(counts.ts.mat)
+
+pheatmap(counts.ts.mat, Rowv=NA, Colv=NA, na.rm = TRUE, hclustfun = NA, xlab = NA, show_colnames =FALSE, cluster_cols = FALSE, cluster_rows = FALSE, scale="column", kmeans_k=NA, color=c("dodgerblue3", "goldenrod1"), main = "QuantSeq Counts, Gonad and Larval Tissues")
 ```
 
-boxplot of each sample for outliers. Look at only first 16 rows (I'll have 16 objects in my dataset)
+### Separate larvae and gonad samples into 2 dataframes, remove genes that aren't present in those samples
 ```{r}
-data.stand.row <- as.data.frame(data.stand.row)
-for (i in 1:16) {
- boxplot(log(as.numeric(data.stand.row[i,]))+1)         
-}
+counts.ts.gonad <- as.data.frame(counts.ts[grepl(".G_", rownames(counts.ts)), ])
+counts.ts.larvae <- as.data.frame(counts.ts[grepl(".L_", rownames(counts.ts)), ])
+counts.ts.gonad[,1:3]
+counts.ts.larvae[,1:3]
+
+# re-drop "genes" not present, calculate the number that were dropped (i.e. which were present in other tissue sample type) 
+counts.ts.gonad.s <- drop.var(counts.ts.gonad , min.po = 1/17)
+counts.ts.larvae.s <- drop.var(counts.ts.larvae, min.po = 1/9)
+print(paste("# of genes not present in gonad samples & dropped:", ncol(counts.ts.gonad) - ncol(counts.ts.gonad.s), sep=" "))
+print(paste("# of genes not present in larval samples & dropped:", ncol(counts.ts.larvae) - ncol(counts.ts.larvae.s), sep=" "))
+ncol(counts.ts.gonad.s) # 13,002 in gonad samples (makes sense, gonad transcriptome was used)
+ncol(counts.ts.larvae.s) #4,410 in larval samples 
+
+write.csv(counts.ts.gonad.s, file="results/multivariate/gonad.counts.csv")
+write.csv(counts.ts.larvae.s, file="results/multivariate/larvae.counts.csv")
 ```
 
-Perform PCA on z-transformed (by row) dataset 
+## Drop genes with very little variability between all samples, using coefficient variation <5
 
+NOTE: NONE DROPPED
 ```{r}
-data.tsz <- data.stand(data.ts, method="standardize", margin="column", plot=F)
-hist(colMeans(data.tsz)) #how did standardizing do? 
-data.eucd <- vegdist(data.tsz, method="euclidean")
-nhclus.scree(data.eucd, max.k=16)
+counts.ts.gonad.sv <- drop.var(counts.ts.gonad.s, min.cv=5) 
+ncol(counts.ts.gonad.s) - ncol(counts.ts.gonad.sv) #number of contigs/genes dropped due to low variance .. none 
+
+counts.ts.larvae.sv <- drop.var(counts.ts.larvae.s, min.cv=5) 
+ncol(counts.ts.larvae.s) - ncol(counts.ts.larvae.sv) #number of contigs/genes dropped due to low variance .. none 
 ```
 
-```{r}
-data.kmeans2 <- kmeans(data.eucd, centers=2, iter.max = 10000, nstart = 25)
-data.kmeans2
-data.kmeans3 <- kmeans(data.eucd, centers=3, iter.max = 10000, nstart = 25)
-data.kmeans3
-print(data.pam2 <- cluster::pam(data.eucd, k=2))
-print(data.pam3 <- cluster::pam(data.eucd, k=3))
-print(data.pam4 <- cluster::pam(data.eucd, k=4))
-plot(data.pam2)
-plot(data.pam3)
-plot(data.pam4)
-# non-hierarchical k-means or PAM clustering do not seem work on this dataset - not dividing into clusters 
-```
+### Heat maps for gonad, larval tissues separately 
 
-Try NMDS
-
-```{r}
-hist(log(data.ts+1))
-data.ts.log <- log(data.ts + 1)
-print(nmds.2 <- metaMDS(data.ts.log, distance="bray", k=2, autotransform = FALSE, trymax=1000))
-```
-
-re-run nmds using k=3 (3 axes); stress is reduced to 7% (from)
+Clearly samples 13 and 3 have very low counts ... inspect later 
 
 ```{r}
-print(nmds.3 <- metaMDS(data.ts.log, distance="bray", k=3, autotransform = FALSE, trymax=1000))
+# gonad
+pdf(file="plots/heatmap-gonad.pdf", width = 5.5, height = 7.5)
+pheatmap(counts.ts.gonad.s, Rowv=NA, Colv=NA, na.rm = TRUE, hclustfun = NA, xlab = NA, show_colnames =FALSE, cluster_cols = FALSE, scale="column", kmeans_k=NA, color=c("dodgerblue3", "goldenrod1"), main = "QuantSeq Counts, Gonad Tissue")
+dev.off()
+
+pdf(file="plots/heatmap-larvae.pdf", width = 5.5, height = 7.5)
+#larval
+pheatmap(counts.ts.larvae.s, Rowv=NA, Colv=NA, na.rm = TRUE, hclustfun = NA, xlab = NA, show_colnames =FALSE, cluster_cols = FALSE,  scale="column", kmeans_k=NA, color=c("dodgerblue3", "goldenrod1"), main = "QuantSeq Counts, Larval Tissue")
+dev.off()
 ```
 
+
+### Merge sample key info to count data, then sort, and generate heat map for initial inspection of gonad tissue samples
 ```{r}
-nmds.scree(data.ts.log, distance = "bray", k=10, autotransform = F, trymax = 20) 
+# order columns by count 
+countmns.gonad <- colMeans(counts.ts.gonad.s, na.rm=TRUE)
+counts.ts.gonad.s <- counts.ts.gonad.s[,order(countmns.gonad)]
+
+# merge count data with sample key 
+counts.ts.gonad.s.a <- merge(y=counts.ts.gonad.s, x=key, by.y="row.names", by.x="filename") #merge 
+counts.ts.gonad.s.a[,1:10] #check out results of merge
+
+# reset row names as sample names
+rownames(counts.ts.gonad.s.a) <- counts.ts.gonad.s.a[,1]  
+
+# sort rows/smpls by pH
+counts.ts.gonad.s.a <- with(counts.ts.gonad.s.a, counts.ts.gonad.s.a[order(pH),]) 
+
+# extract matrix, create vector of pH 
+counts.ts.gonad.s.a.mat <- data.matrix(counts.ts.gonad.s.a[,-1:-9])
+pH <- c("gray30", "steelblue")[counts.ts.gonad.s.a$pH]
+
+pheatmap(counts.ts.gonad.s.a.mat, Rowv=NA, Colv=NA, scale="column", annotation_row = pH, annotation_colors=c("steelblue", "gray30")) #red=low pH, blue=ambient pH genes sorted by average
 ```
 
-# 2 looks
-```{r}
-stressplot(nmds.2)
-```
-
-```{r}
-plot(nmds.2, type="n", xlim=c(-1,1), ylim=c(-1,1))
-text(nmds.2, labels=row.names(data.ts.log))
-ordiplot(nmds.2, choices = c(1,2), type="text", display = "sites")
-```
-
-```{r}
-head(log(data.stand.row+1))
-data.ts.log <- log(data.ts + 1)
-print(nmds.2 <- metaMDS(data.ts.log, distance="bray", k=2, autotransform = FALSE, trymax=1000))
-```
 

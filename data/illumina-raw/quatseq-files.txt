@@ -1,24 +1,25 @@
-../data/illumina-raw/CP-KS-LibL-L10-G_S59_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L11-G_S65_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L13-G_S60_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L14-G_S63_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L15-G_S68_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L19-G_S67_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L2-G_S34_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L21-G_S58_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L23-G_S61_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L24-G_S62_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L29-G_S36_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L3-G_S64_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L32-G_S35_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L33-G_S66_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L34-L_S25_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L35-L_S31_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L37-L_S32_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L39-L_S29_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L41-L_S27_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L44-L_S30_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L45-L_S28_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L47-L_S33_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-L7-G_S57_L006_R1_001.fastq
-../data/illumina-raw/CP-KS-LibL-SN1016-G_S26_L006_R1_001.fastq
+filename	rnasample	tissuesample	temperature	pH	sex	stage	tissue
+L2-G_S34	2	SN-6-17	6	Low	HPF	2	gonad
+L3-G_S64	3	SN-6-18	6	Low	H	2	gonad
+L7-G_S57	7	SN-6-22	6	Low	H	2	gonad
+L10-G_S59	10	SN-6-25	6	Ambient	HPF	2	gonad
+L11-G_S65	11	SN-6-26	6	Ambient	F	2	gonad
+L13-G_S60	13	SN-6-28	6	Ambient	HPM	2	gonad
+L14-G_S63	14	SN-6-29	6	Ambient	HPF	3	gonad
+L15-G_S68	15	SN-6-30	6	Ambient	F	3	gonad
+SN1016-G_S26	SN1016	SN-10-16	10	Low	F	3	gonad
+L19-G_S67	19	SN-10-18	10	Low	HPM	2	gonad
+L21-G_S58	21	SN-10-21	10	Low	F	2	gonad
+L23-G_S61	23	SN-10-23	10	Low	H	2	gonad
+L24-G_S62	24	SN-10-24	10	Low	F	2	gonad
+L29-G_S36	29	SN-10-29	10	Ambient	F	2	gonad
+L32-G_S35	32	SN-10-32	10	Ambient	H	2	gonad
+L33-G_S66	33	SN-10-33	10	Ambient	HPF	2	gonad
+L34-L_S25	34	77-A	6	Ambient	NA	NA	larvae
+L35-L_S31	35	10-A	6	Ambient	NA	NA	larvae
+L37-L_S32	37	69-A	6	Ambient	NA	NA	larvae
+L39-L_S29	39	48-A	6	Ambient	NA	NA	larvae
+L41-L_S27	41	6-A	10	Low	NA	NA	larvae
+L44-L_S30	44	32-A	10	Low	NA	NA	larvae
+L45-L_S28	45	79-A	10	Low	NA	NA	larvae
+L47-L_S33	47	26-AÊ	10	Low	NA	NA	larvae

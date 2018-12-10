@@ -57,3 +57,6 @@ results/transrate_results/read-evaluated/20181029-olurida-gonad-assembly/2018102
 ./results/trinity/20181029-olurida-gonad-assembly.fasta
 ./results/trinity/20181029-olurida-gonad-trimnorm-left.fq
 ./results/trinity/20181029-olurida-gonad-trimnorm-right.fq
+*.bt2
+*.fa
+*.fai
