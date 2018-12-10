@@ -1,0 +1,558 @@
+---
+title: "DeSeq on QuantSeq"
+output: html_document
+---
+
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("DESeq2", version = "3.8")
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("apeglm", version = "3.8")
+library(ashr, verbose="F")
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("vsn", version = "3.8")
+
+list.of.packages <- c("DESeq2", "apeglm", "ashr", "pheatmap", "vsn") #add new libraries here 
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+# Load all libraries 
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X)) 
+})
+
+```
+
+
+```{r}
+setwd("~/Documents/roberts-lab/laura-quantseq/notebooks/")
+cts <- as.matrix(read.csv(
+                      "../results/kallisto/1129matrix-trans_counts.isoform.counts.matrix", 
+                      sep="\t", stringsAsFactors = FALSE, row.names=1))
+head(cts[,1:3])
+```
+
+
+Remove extraneous text from sample names in count matrix 
+```{r}
+colnames(cts) <- gsub("CP.KS.LibL.", "", colnames(cts))
+colnames(cts) <- gsub("_L006_R1_001", "", colnames(cts))
+colnames(cts) #confirm that it worked
+```
+
+Import QuantSeq sample key
+
+```{r}
+key <- read.csv("../data/quantseq_key.csv", header=T, na.strings = NA)
+key$stage <- as.factor(key$stage)
+key$temperature <- as.factor(key$temperature)
+key$filename <- as.character(key$filename)
+gonad.key <- subset(key, tissue=="gonad")
+larvae.key <- subset(key, tissue=="larvae")
+rownames(gonad.key) <- gonad.key$filename
+rownames(larvae.key) <- larvae.key$filename
+gonad.key <- gonad.key[c("temperature", "pH", "sex", "sex2", "stage")]
+larvae.key <- larvae.key[c("temperature", "pH")]
+View(gonad.key)
+```
+
+From heatmap in notebook QuantSeq-multivariate-analysis, looks like samples L3 and L13 had very few hits. Let's summarize gene counts by sample to confirm, and remove those samples if needed
+
+```{r}
+colSums(cts) # correct, only 319 and 565 counts for samples 13 and 3 respectively, compared to >5,000 for other gonad samples
+remove <- c("L3.G_S64", "L13.G_S60")
+gonad.key2 <- gonad.key[!rownames(gonad.key) %in% remove, ]
+```
+
+
+Reorder colums of count matrix and rows of key so they are in the same order. 
+
+```{r}
+all(rownames(gonad.key2) %in% colnames(cts)) #make sure names match 
+cts.gonad <- cts[, rownames(gonad.key2)] # extract only gonad samples, removing low count ones 
+#cts.gonad <- cts[, rownames(gonad.key)] # extract only gonad samples, dont remove low counts
+all(rownames(gonad.key2) == colnames(cts.gonad))
+#all(rownames(gonad.key) == colnames(cts.gonad))
+```
+
+###  Round all non-integers up, and remove genes that don't show up in any samples
+
+```{r}
+cts.gonad.rnd <- ceiling(cts.gonad)
+dds.pH <- DESeqDataSetFromMatrix(countData = cts.gonad.rnd,
+                              colData = gonad.key2,
+                              design = ~ pH)
+
+dds.stage <- DESeqDataSetFromMatrix(countData = cts.gonad.rnd,
+                              colData = gonad.key2,
+                              design = ~ stage)
+
+dds.sex <- DESeqDataSetFromMatrix(countData = cts.gonad.rnd,
+                              colData = gonad.key2,
+                              design = ~ sex2)
+
+dds.temp <- DESeqDataSetFromMatrix(countData = cts.gonad.rnd,
+                              colData = gonad.key2,
+                              design = ~ temperature)
+dds.pH
+dds.stage
+dds.sex
+dds.temp
+```
+
+## Start with the pH comparison 
+
+Remove any rows (contigs) with zero hits
+
+```{r}
+keep <- rowSums(counts(dds.pH)) >= 1
+dds.pH <- dds.pH[keep,]
+nrow(dds.pH)
+colnames(dds.pH)
+```
+
+## Differential Expression Analysis
+
+```{r}
+dds.pH.DESeq <- DESeq(dds.pH)
+```
+
+```{r}
+res.pH <- results(dds.pH.DESeq)
+```
+
+### Log fold change shrinkage for visualization and ranking
+
+```{r}
+resultsNames(dds.pH.DESeq)
+resLFC.ph <- lfcShrink(dds.pH.DESeq, coef= "pH_Low_vs_Ambient", type="apeglm")
+```
+
+```{r}
+res.pH.Ordered <- res.pH[order(res.pH$pvalue),]
+summary(res.pH)
+```
+
+```{r}
+sum(res.pH$padj < 0.1, na.rm=TRUE)
+sum(res.pH$pvalue < 0.1, na.rm=TRUE)
+```
+
+```{r}
+res05.pH <- results(dds.pH.DESeq, alpha=0.05)
+summary(res05.pH)
+sum(res05.pH$padj < 0.05, na.rm=TRUE)
+sum(res05.pH$pvalue < 0.05, na.rm=TRUE)
+```
+
+```{r}
+plotMA(res.pH, ylim=c(-2,2))
+```
+
+```{r}
+plotMA(resLFC.ph, ylim=c(-2,2))
+```
+
+```{r}
+# because we are interested in treated vs untreated, we set 'coef=2'
+resNorm.pH <- lfcShrink(dds.pH.DESeq, coef=2, type="normal")
+resAsh.pH <- lfcShrink(dds.pH.DESeq, coef=2, type="ashr")
+par(mfrow=c(1,3), mar=c(4,4,2,1))
+xlim <- c(1,1e5); ylim <- c(-3,3)
+plotMA(resLFC.ph, xlim=xlim, ylim=ylim, main="apeglm")
+plotMA(resNorm.pH, xlim=xlim, ylim=ylim, main="normal")
+plotMA(resAsh.pH, xlim=xlim, ylim=ylim, main="ashr")
+```
+
+### plot gene counts for those with lowest p-values (below 0.05)
+
+```{r}
+pH.p05.names <-rownames(subset(res.pH.Ordered, pvalue < 0.05)) #padj super high across the board - check out contigs with low pvalues instead ... 
+for (i in 1:length(pH.p05.names)) {
+          plotCounts(dds.pH.DESeq, gene=pH.p05.names[i], intgroup="pH")
+}
+```
+
+
+```{r}
+vsd <- varianceStabilizingTransformation(dds.pH.DESeq, blind=FALSE)
+rld <- rlog(dds.pH.DESeq, blind=FALSE)
+ntd <- normTransform(dds.pH.DESeq)
+
+meanSdPlot(assay(vsd))
+meanSdPlot(assay(ntd))
+meanSdPlot(assay(rld))
+
+select <- order(rowMeans(counts(dds.pH.DESeq,normalized=TRUE)),
+                decreasing=TRUE)
+pH.df <- as.data.frame(colData(dds.pH.DESeq)[,c("pH","sex2")])
+pheatmap(assay(vsd)[select,], cluster_rows=FALSE, show_rownames=FALSE,
+         cluster_cols=FALSE, annotation_col=pH.df)
+
+
+plotPCA(ntd, intgroup=c("pH"))
+plotPCA(ntd, intgroup=c("sex"))
+plotPCA(ntd, intgroup=c("sex2"))
+plotPCA(ntd, intgroup=c("stage"))
+plotPCA(ntd, intgroup=c("temperature"))
+plotPCA(ntd, intgroup=c("pH", "sex2"))
+plotPCA(ntd, intgroup=c("pH", "temperature"))
+
+plotDispEsts(dds.pH.DESeq)
+```
+
+Write out counts, and transformed data 
+
+```{r}
+pH.p05 <-as.data.frame(subset(res.pH.Ordered, pvalue < 0.05))
+write.csv(pH.p05, file="../results/DESeq/pH.p05.csv")
+
+pH.p05.cts <- cts.gonad.rnd[rownames(cts.gonad.rnd) %in% pH.p05.names,]
+write.csv(pH.p05.cts, file="../results/DESeq/pH.p05.counts.csv")
+
+pH.p05.norm <- assay(rld[rownames(assay(rld)) %in% pH.p05.names,])
+write.csv(pH.p05.norm, file="../results/DESeq/pH.p05.normalized.csv")
+
+write.csv(pH.p05.names, file="../results/DESeq/pH.p05.contignames.csv")
+
+write.csv(assay(rld), "../results/DESeq/pH.counts.csv")
+```
+
+
+## Check out sex differences 
+
+Remove any rows (contigs) with zero hits
+
+```{r}
+keep <- rowSums(counts(dds.sex)) >= 1
+dds.sex <- dds.sex[keep,]
+nrow(dds.sex)
+colnames(dds.sex)
+```
+
+## Differential Expression Analysis
+
+```{r}
+dds.sex.DESeq <- DESeq(dds.sex)
+```
+
+```{r}
+res.sex <- results(dds.sex.DESeq)
+```
+
+### Log fold change shrinkage for visualization and ranking
+
+```{r}
+resultsNames(dds.sex.DESeq)
+resLFC.sex <- lfcShrink(dds.sex.DESeq, coef= "sex2_H_vs_F", type="apeglm")
+```
+
+```{r}
+res.sex.Ordered <- res.sex[order(res.sex$pvalue),]
+summary(res.sex)
+```
+
+```{r}
+sum(res.sex$padj < 0.1, na.rm=TRUE)
+sum(res.sex$pvalue < 0.1, na.rm=TRUE)
+```
+
+```{r}
+res05.sex <- results(dds.sex.DESeq, alpha=0.05)
+summary(res05.pH)
+sum(res05.pH$padj < 0.05, na.rm=TRUE)
+sum(res05.pH$pvalue < 0.05, na.rm=TRUE)
+```
+
+```{r}
+plotMA(res.sex, ylim=c(-2,2))
+```
+
+```{r}
+plotMA(resLFC.sex, ylim=c(-2,2))
+```
+
+```{r}
+# because we are interested in treated vs untreated, we set 'coef=2'
+resNorm.sex <- lfcShrink(dds.sex.DESeq, coef=2, type="normal")
+resAsh.sex <- lfcShrink(dds.sex.DESeq, coef=2, type="ashr")
+par(mfrow=c(1,3), mar=c(4,4,2,1))
+xlim <- c(1,1e5); ylim <- c(-3,3)
+plotMA(resLFC.sex, xlim=xlim, ylim=ylim, main="apeglm")
+plotMA(resNorm.sex, xlim=xlim, ylim=ylim, main="normal")
+plotMA(resAsh.sex, xlim=xlim, ylim=ylim, main="ashr")
+```
+
+### plot gene counts for those with p-values below 0.05
+
+```{r}
+sex.p05.names <-rownames(subset(res.sex.Ordered, pvalue < 0.05)) #padj super high across the board - check out contigs with low pvalues instead ... 
+for (i in 1:length(sex.p05.names)) {
+          plotCounts(dds.sex.DESeq, gene=sex.p05.names[i], intgroup="sex2")
+}
+```
+
+```{r}
+sex.p05 <-as.data.frame(subset(res.sex.Ordered, pvalue < 0.05))
+write.csv(sex.p05, file="../results/DESeq/sex.p05.csv")
+
+sex.p05.cts <- cts.gonad.rnd[rownames(cts.gonad.rnd) %in% sex.p05.names,]
+write.csv(sex.p05.cts, file="../results/DESeq/sex.p05.counts.csv")
+```
+
+
+## Check out stage differences 
+
+Remove any rows (contigs) with zero hits
+
+```{r}
+keep <- rowSums(counts(dds.stage)) >= 1
+dds.stage <- dds.stage[keep,]
+nrow(dds.stage)
+colnames(dds.stage)
+```
+
+## Differential Expression Analysis
+
+```{r}
+dds.stage.DESeq <- DESeq(dds.stage)
+```
+
+```{r}
+res.stage <- results(dds.stage.DESeq)
+```
+
+### Log fold change shrinkage for visualization and ranking
+
+```{r}
+resultsNames(dds.stage.DESeq)
+resLFC.stage <- lfcShrink(dds.stage.DESeq, coef= "stage_3_vs_2", type="apeglm")
+```
+
+```{r}
+res.stage.Ordered <- res.stage[order(res.stage$pvalue),]
+summary(res.stage)
+```
+
+```{r}
+sum(res.stage$padj < 0.1, na.rm=TRUE)
+sum(res.stage$pvalue < 0.05, na.rm=TRUE)
+```
+
+```{r}
+res05.pH <- results(dds.stage.DESeq, alpha=0.05)
+summary(res05.pH)
+sum(res05.pH$padj < 0.05, na.rm=TRUE)
+sum(res05.pH$pvalue < 0.05, na.rm=TRUE)
+```
+
+```{r}
+plotMA(res.stage, ylim=c(-2,2))
+```
+
+```{r}
+plotMA(resLFC.stage, ylim=c(-2,2))
+```
+
+```{r}
+# because we are interested in treated vs untreated, we set 'coef=2'
+resNorm.stage <- lfcShrink(dds.stage.DESeq, coef=2, type="normal")
+resAsh.stage <- lfcShrink(dds.stage.DESeq, coef=2, type="ashr")
+par(mfrow=c(1,3), mar=c(4,4,2,1))
+xlim <- c(1,1e5); ylim <- c(-3,3)
+plotMA(resLFC.stage, xlim=xlim, ylim=ylim, main="apeglm")
+plotMA(resNorm.stage, xlim=xlim, ylim=ylim, main="normal")
+plotMA(resAsh.stage, xlim=xlim, ylim=ylim, main="ashr")
+```
+
+### plot gene counts for those with p-values below 0.05
+
+```{r}
+stage.p05.names <-rownames(subset(res.stage.Ordered, pvalue < 0.05)) #padj super high across the board - check out contigs with low pvalues instead ... 
+for (i in 1:length(stage.p05.names)) {
+          plotCounts(dds.stage.DESeq, gene=stage.p05.names[i], intgroup="stage")
+}
+```
+
+```{r}
+stage.p05 <-as.data.frame(subset(res.stage.Ordered, pvalue < 0.05))
+write.csv(stage.p05, file="../results/DESeq/stage.p05.csv")
+
+stage.p05.cts <- cts.gonad.rnd[rownames(cts.gonad.rnd) %in% stage.p05.names,]
+write.csv(stage.p05.cts, file="../results/DESeq/stage.p05.counts.csv")
+```
+
+# Diff expression in larvae 
+
+```{r}
+cts.larvae <- cts[, rownames(larvae.key)] # extract only larvae samples
+all(rownames(larvae.key) == colnames(cts.larvae))
+```
+
+###  Round all non-integers up, and remove genes that don't show up in any samples
+
+```{r}
+cts.larvae.rnd <- ceiling(cts.larvae)
+ddsLarvae.pH <- DESeqDataSetFromMatrix(countData = cts.larvae.rnd,
+                              colData = larvae.key,
+                              design = ~ pH)
+```
+
+
+Remove any rows (contigs) with zero hits
+
+```{r}
+keep <- rowSums(counts(ddsLarvae.pH)) >= 1
+ddsLarvae.pH <- ddsLarvae.pH[keep,]
+nrow(ddsLarvae.pH)
+colnames(ddsLarvae.pH)
+```
+
+## Differential Expression Analysis
+
+```{r}
+ddsLarvae.pH.DESeq <- DESeq(ddsLarvae.pH)
+```
+
+```{r}
+resLarvae.pH <- results(ddsLarvae.pH.DESeq)
+```
+
+### Log fold change shrinkage for visualization and ranking
+
+```{r}
+resultsNames(ddsLarvae.pH.DESeq)
+resLarvaeLFC.ph <- lfcShrink(ddsLarvae.pH.DESeq, coef= "pH_Low_vs_Ambient", type="apeglm")
+```
+
+```{r}
+resLarvae.pH.Ordered <- resLarvae.pH[order(resLarvae.pH$pvalue),]
+summary(resLarvae.pH)
+```
+
+```{r}
+sum(resLarvae.pH$padj < 0.1, na.rm=TRUE)
+sum(resLarvae.pH$pvalue < 0.05, na.rm=TRUE)
+```
+
+```{r}
+resLarvae05.pH <- results(ddsLarvae.pH.DESeq, alpha=0.05)
+summary(resLarvae05.pH)
+sum(resLarvae05.pH$padj < 0.05, na.rm=TRUE)
+sum(resLarvae05.pH$pvalue < 0.05, na.rm=TRUE)
+```
+
+```{r}
+plotMA(resLarvae.pH, ylim=c(-2,2))
+```
+
+```{r}
+plotMA(resLarvaeLFC.ph, ylim=c(-2,2))
+```
+
+```{r}
+# because we are interested in treated vs untreated, we set 'coef=2'
+resNormLarvae.pH <- lfcShrink(ddsLarvae.pH.DESeq, coef=2, type="normal")
+resAshLarvae.pH <- lfcShrink(ddsLarvae.pH.DESeq, coef=2, type="ashr")
+par(mfrow=c(1,3), mar=c(4,4,2,1))
+xlim <- c(1,1e5); ylim <- c(-3,3)
+plotMA(resLarvaeLFC.ph, xlim=xlim, ylim=ylim, main="apeglm")
+plotMA(resNormLarvae.pH, xlim=xlim, ylim=ylim, main="normal")
+plotMA(resAshLarvae.pH, xlim=xlim, ylim=ylim, main="ashr")
+```
+
+### plot gene counts for those with lowest p-values (below 0.05)
+
+```{r}
+print(pHLarvae.p05.names <-rownames(subset(resLarvae.pH.Ordered, pvalue < 0.05))) #padj super high across the board - check out contigs with low pvalues instead ... 
+larvae.annot <- read.csv("results/DESeq/larvae.pH.p05-annot.csv", header=T, stringsAsFactors = FALSE)
+#plot.axes <- c(0,0,0,0,0,0,7,8,9)
+
+pdf(file = "results/DESeq/larval-diff-plots.pdf", width=4.5, height=6)
+par(mfrow=(c(3,3)), mar=c(2,1,4,2), oma=c(1,4,4,2), col="gray25")
+
+for (i in 1:length(pHLarvae.p05.names)) {
+          y.lim <- c(0,max(assay(ddsLarvae.pH.DESeq)[rownames(assay(ddsLarvae.pH.DESeq)) == pHLarvae.p05.names[i],]))
+          plotCounts(ddsLarvae.pH.DESeq, gene=pHLarvae.p05.names[i], intgroup="pH", col="gray40", bg=c("gray50", "steelblue")[ddsLarvae.pH.DESeq$pH], pch=21, cex=2, transform=FALSE, normalized=TRUE, ylim=c(y.lim*1.2), axes=FALSE, xlab = NA, main=larvae.annot[larvae.annot$Trinity.gene== pHLarvae.p05.names[i],"Gene"], col.main="gray40")
+          axis(side=2,las=1,at=pretty(c(0,y.lim*1.1)))
+          #if (i==plot.axes[i]) {
+          #          axis(side=1)
+          #}
+}
+mtext(side=2,text="Normalized counts", outer=T,line=2, col="gray40")
+mtext(side=3,text="Larval gene counts by parental pH\nDifferentially expressed genes (top blast hit)", outer=T,line=-.5, col="gray30")
+dev.off()
+```
+
+
+```{r}
+vsd.larvae <- varianceStabilizingTransformation(ddsLarvae.pH.DESeq, blind=FALSE)
+rld.larvae <- rlog(ddsLarvae.pH.DESeq, blind=FALSE)
+ntd.larvae <- normTransform(ddsLarvae.pH.DESeq)
+
+meanSdPlot(assay(vsd.larvae))
+meanSdPlot(assay(ntd.larvae))
+meanSdPlot(assay(rld.larvae))
+
+select <- order(rowMeans(counts(ddsLarvae.pH.DESeq,normalized=TRUE)),
+                decreasing=TRUE)
+pHLarvae.df <- as.data.frame(colData(ddsLarvae.pH.DESeq)[,c("pH")])
+pheatmap(assay(vsd.larvae)[select,], cluster_rows=FALSE, show_rownames=FALSE,
+         cluster_cols=FALSE, annotation_col=pHLarvae.df)
+
+plotPCA(vsd.larvae, intgroup=c("pH"))
+plotDispEsts(ddsLarvae.pH.DESeq)
+```
+
+
+```{r}
+Larvae.pH.p05 <-as.data.frame(subset(resLarvae.pH.Ordered, pvalue < 0.05))
+write.csv(Larvae.pH.p05, file="../results/DESeq/larvae.pH.p05.csv")
+
+Larvae.pH.p05.cts <- cts.larvae.rnd[rownames(cts.larvae.rnd) %in% pHLarvae.p05.names,]
+write.csv(Larvae.pH.p05.cts, file="../results/DESeq/larvae.pH.p05.counts.csv")
+
+write.csv(pHLarvae.p05.names, file="../results/DESeq/pHLarvae.p05.contignames.csv")
+
+write.csv(assay(rld.larvae), file="results/DESeq/Larvae.pH.counts.csv")
+```
+
+
+## Check for outliers
+
+```{r}
+W <- res.pH$stat
+maxCooks <- apply(assays(dds.pH.DESeq)[["cooks"]],1,max)
+idx <- !is.na(W)
+plot(rank(W[idx]), maxCooks[idx], xlab="rank of Wald statistic", ylab="maximum Cook's distance per gene", ylim=c(0,5), cex=.4, col=rgb(0,0,0,.3))
+m <- ncol(dds.pH.DESeq)
+p <- 3
+abline(h=qf(.99, p, m - p))
+```
+
+
+# Differences between overwintering temp 
+
+```{r}
+keep <- rowSums(counts(dds.temp)) >= 1
+dds.stage <- dds.temp[keep,]
+nrow(dds.temp)
+colnames(dds.temp)
+dds.temp.DESeq <- DESeq(dds.temp)
+res.temp <- results(dds.temp.DESeq)
+res.temp.Ordered <- res.temp[order(res.temp$pvalue),]
+summary(res.temp)
+sum(res.temp$padj < 0.1, na.rm=TRUE)
+sum(res.temp$pvalue < 0.05, na.rm=TRUE)
+res05.temp <- results(dds.temp.DESeq, alpha=0.05)
+summary(res05.temp)
+sum(res05.temp$padj < 0.05, na.rm=TRUE)
+sum(res05.temp$pvalue < 0.05, na.rm=TRUE)
+temp.p05.names <-rownames(subset(res.temp.Ordered, pvalue < 0.05)) #padj super high across the board - check out contigs with low pvalues instead ... 
+for (i in 1:length(temp.p05.names)) {
+          plotCounts(dds.temp.DESeq, gene=temp.p05.names[i], intgroup="temperature")
+}
+```

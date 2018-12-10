@@ -1,0 +1,399 @@
+---
+title: "QuantSeq-diffexp-multivariate"
+output: html_document
+---
+```{r}
+list.of.packages <- c("vegan", "dplyr", "factoextra", "FactoMineR", "RColorBrewer", "tibble", "reshape2") #add new libraries here 
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+# Load all libraries 
+lapply(list.of.packages, FUN = function(X) {
+  do.call("require", list(X)) 
+})
+getwd()
+source("references/biostats.R")
+```
+
+# Load data
+
+```{r}
+# gonad <- read.csv("results/DESeq/pH.counts.csv", row.names = 1) #counts, without gene ID changed for gene name 
+gonad <- read.csv("results/DESeq/pH.counts-annot.csv", row.names = 1) #Gene names swapped for trinity gene ID
+head(gonad[1:5, 1:5])
+pH.p05.names <- as.character(unlist(as.data.frame(read.csv("results/DESeq/pH.p05.contignames.csv")[2])))
+key.gonad <- read.csv("data/quantseq_key.csv", header=T, na.strings = NA)[c("filename", "pH", "sex2", "temperature")]
+
+
+# gonad.trans <- assay(rld) #or if it's already an object from the QuantSeq-DeSeq notebook
+for (i in 1:14){
+          print(summary(gonad[,i]))
+          print(is.numeric(gonad[,i]))
+}
+
+larvae <- read.csv("results/DESeq/Larvae.pH.counts-annot.csv", row.names = 1) #Gene names swapped for trinity gene ID
+# larvae <- read.csv("results/DESeq/Larvae.pH.counts.csv", row.names = 1) #counts, without gene ID changed for gene name 
+pHLarvae.p05.names <- as.character(unlist(as.data.frame(read.csv(file="results/DESeq/pHLarvae.p05.contignames.csv")[2])))
+```
+
+How many contigs? 
+
+```{r}
+nrow(gonad)
+nrow(larvae)
+View(head(larvae))
+```
+
+
+```{r}
+gonad.trans <- as.matrix(t(gonad))
+gonad.pca <- prcomp(gonad.trans, scale=F) #scale=F for variance-covariance matrix
+summary(gonad.pca)
+pca.eigenval(gonad.pca) #The Proporation of Variance = %variance 
+screeplot(gonad.pca, bstick=TRUE)
+ordi.monte(gonad.trans, ord="pca", dim=8, perm = 1000, scale = F)
+```
+
+PC1, 2, 3 and 4 appear significant! 
+
+```{r}
+head(gonad.pca$rotation)
+```
+
+```{r}
+# Extract the variables (genes) with largest loadings / eigenvalues 
+gonad.pc.eigenv <- as.data.frame(gonad.pca$rotation)[c("PC1", "PC2", "PC3", "PC4")]                 # convert to dataframe, keep only first 4 PC
+gonad.pc.eigenv <- tibble::rownames_to_column(gonad.pc.eigenv)                                      # make row names a column 
+
+top.1 <- gonad.pc.eigenv %>% arrange(PC1) %>% top_n(5, wt = PC1) %>% select(rowname, PC1)          # For each PC, extract eigenv. w/ biggest abs(loadings)
+bottom.1 <- gonad.pc.eigenv %>% arrange(PC1) %>% top_n(-5, wt = PC1) %>% select(rowname, PC1)     
+top.1$axis <- "PC1"
+bottom.1$axis <- "PC1"
+top.2 <- gonad.pc.eigenv %>% arrange(PC2) %>% top_n(5, wt = PC2) %>% select(rowname, PC2)
+bottom.2 <- gonad.pc.eigenv %>% arrange(PC2) %>% top_n(-5, wt = PC2) %>% select(rowname, PC2)
+top.2$axis <- "PC2"
+bottom.2$axis <- "PC2"
+top.3 <- gonad.pc.eigenv %>% arrange(PC3) %>% top_n(5, wt = PC3) %>% select(rowname, PC3)
+bottom.3 <- gonad.pc.eigenv %>% arrange(PC3) %>% top_n(-5, wt = PC3) %>% select(rowname, PC3)
+top.3$axis <- "PC3"
+bottom.3$axis <- "PC3"
+top.4 <- gonad.pc.eigenv %>% arrange(PC4) %>% top_n(5, wt = PC4) %>% select(rowname, PC4)
+bottom.4 <- gonad.pc.eigenv %>% arrange(PC4) %>% top_n(-5, wt = PC4) %>% select(rowname, PC4)
+top.4$axis <- "PC4"
+bottom.4$axis <- "PC4"
+temp <- list(top.1, bottom.1, top.2, bottom.2, top.3, bottom.3, top.4, bottom.4)
+
+for (i in 1:length(temp)){                                                                          # rename columns in all dataframes created above
+          colnames(temp[[i]]) <- c("gene", "eigenvalue", "pc")
+}
+gonad.eigen.top <- do.call(rbind, temp)                                                             # create one dataframe with top eigenvalues 
+write.csv(x = gonad.eigen.top, file = "results/DESeq/gonad.top.eigenvectors.csv")                   # write out file 
+
+```
+
+
+```{r}
+# Which variables are both differentially expressed AND sign. contribute to PC1-4? 
+gonad.pc.structure <- pca.structure(gonad.pca, gonad.trans, dim=5, cutoff=0)[1:4]
+gonad.pc.diff <- as.data.frame(gonad.pc.structure[rownames(gonad.pc.structure) %in% pH.p05.names,])
+gonad.pc.diff[1:4] <- lapply(gonad.pc.diff[1:4], function(x) as.numeric(as.character(x)))
+gonad.pc.diff <- gonad.pc.diff %>%
+    rownames_to_column('gene') %>%
+    filter_if(is.numeric, any_vars(abs(.) >= 0)) %>%
+    column_to_rownames('gene')
+gonad.pc1.genes <- rownames(subset(gonad.pc.diff, PC1!="NA")[1])
+gonad.pc2.genes <- rownames(subset(gonad.pc.diff, PC2!="NA")[2])
+gonad.pc3.genes <- rownames(subset(gonad.pc.diff, PC3!="NA")[3])
+gonad.pc4.genes <- rownames(subset(gonad.pc.diff, PC4!="NA")[4])
+gonad.pc.genes <- list(gonad.pc1.genes, gonad.pc2.genes, gonad.pc3.genes, gonad.pc4.genes)
+```
+
+```{r}
+print(gonad.scores <- gonad.pca$x)
+
+# Check multivariate normality using pc scores 
+hist(unlist(as.data.frame(gonad.scores), use.names=FALSE))
+shapiro.test(unlist(as.data.frame(gonad.scores), use.names=FALSE))
+```
+
+```{r}
+ordiplot(gonad.pca, display = "sites")
+print(samples.g <- rownames(gonad.scores))
+print(key.gonad <- key.gonad[match(samples.g, key.gonad$filename),])
+key.gonad$pH.sex <- as.factor(paste(key.gonad$pH, key.gonad$sex2, sep="."))
+key.gonad$col <- c(brewer.pal(4, "Set2"))[key.gonad$pH.sex]
+plot(gonad.scores, cex=1.6, pch=16, col=key.gonad$col, xlab="PC1 (17.4%)", ylab="PC2 (13.7%)")
+```
+
+```{r}
+par(oma=c(1,10,1,1))
+fviz_screeplot(gonad.pca, addlabels = TRUE, ylim = c(0, 30))
+fviz_contrib(gonad.pca, choice = "var", axes = 1, top=10)
+fviz_contrib(gonad.pca, choice = "var", axes = 2, top = 10)
+fviz_contrib(gonad.pca, choice = "var", axes = 3, top = 10)
+fviz_contrib(gonad.pca, choice = "var", axes = 4, top = 10)
+fviz_pca_ind(gonad.pca, label="none", habillage=key.gonad$pH.sex)
+a <- as.character(fviz_pca_var(gonad.pca, axes = c(1,2), select.var = list(contrib = 10))$data[["name"]])
+b <- as.character(fviz_pca_var(gonad.pca, axes = c(1,3), select.var = list(contrib = 10))$data[["name"]])
+c <- as.character(fviz_pca_var(gonad.pca, axes = c(1,4), select.var = list(contrib = 10))$data[["name"]])
+d <- as.character(fviz_pca_var(gonad.pca, axes = c(2,3), select.var = list(contrib = 10))$data[["name"]])
+e <- as.character(fviz_pca_var(gonad.pca, axes = c(2,4), select.var = list(contrib = 10))$data[["name"]])
+f <- as.character(fviz_pca_var(gonad.pca, axes = c(3,4), select.var = list(contrib = 10))$data[["name"]])
+
+gonad.top.6 <- unique(c(a, b, c, d, e, f))
+
+as.data.frame(gonad.pc.structure[rownames(gonad.pc.structure) %in% as.character(gonad.top.6),]) #produce table with structure coefficients for the top 6 contributing genes per PC
+
+# Biplots with eigenvectors that are both 1) significant according to PC analysis, and 2) differentially expressed (pvalue<0.05)
+for (i in 1:3) {
+          print(fviz_pca_biplot(gonad.pca, label="none", invisible="quali", axes = c(i, i+1), select.var= list(name = c(gonad.pc.genes[[i]], gonad.pc.genes[[i+1]])), habillage=key.gonad$pH.sex, pointsize=4, col.var = "gray50") + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray40", "lightsteelblue3", "steelblue"))) #+ scale_color_brewer(palette="Paired") + theme_minimal())
+}
+
+for (i in 1:2) {
+          print(fviz_pca_biplot(gonad.pca, label="none", invisible="quali", axes = c(i, 4), select.var= list(name = c(gonad.pc.genes[[i]], gonad.pc4.genes)),  habillage=key.gonad$pH.sex, pointsize=4, col.var = "gray50") + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray40", "lightsteelblue3", "steelblue")))     
+}
+
+
+fviz_pca_biplot(gonad.pca, label="none", invisible="quali", axes = c(1, 3), select.var= list(name = c(gonad.pc1.genes, gonad.pc3.genes)),  habillage=key.gonad$pH.sex, pointsize=4, col.var = "gray50") + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray40", "lightsteelblue3", "steelblue"))
+```
+
+
+## Biplots using the top 10 
+```{r}
+
+pdf(file="results/PCA/gonad-biplot-for-title.pdf", width=6.5, height=6.5)
+fviz_pca_biplot(gonad.pca, label="var", invisible="quali", axes = c(1, 2), select.var= list(contrib=10),  habillage=key.gonad$pH.sex, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray30", "lightsteelblue", "steelblue")) + ggtitle(element_blank())  + theme(legend.position="top", legend.title=element_blank(), legend.key.size = unit(2.5,"line"), legend.text=element_text(size=14), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40")) + guides(shape = guide_legend(override.aes = list(size = 8))) + ggtitle(label="PCA Biplots, gonad tissue by pH and sex") 
+dev.off()
+
+
+
+pdf(file="results/PCA/gonad-biplot-1x3.pdf", width=6.5, height=6.5)
+fviz_pca_biplot(gonad.pca, label="var", invisible="quali", axes = c(1, 3), select.var= list(contrib=10),  habillage=key.gonad$pH.sex, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray30", "lightsteelblue", "steelblue")) + ggtitle(element_blank())  + theme(legend.position="top", legend.title=element_blank(), legend.key.size = unit(2.5,"line"), legend.text=element_text(size=14), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40")) + guides(shape = guide_legend(override.aes = list(size = 8)))
+dev.off()
+
+pdf(file="results/PCA/gonad-biplot-1x4.pdf", width=6.5, height=6.5)
+fviz_pca_biplot(gonad.pca, label="var", invisible="quali", axes = c(1, 4), select.var= list(contrib=10),  habillage=key.gonad$pH.sex, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray30", "lightsteelblue", "steelblue")) + ggtitle(element_blank())  + theme(legend.position="top", legend.title=element_blank(), legend.key.size = unit(2.5,"line"), legend.text=element_text(size=14), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40")) + guides(shape = guide_legend(override.aes = list(size = 8)))
+dev.off()
+
+pdf(file="results/PCA/gonad-biplot-2x3.pdf", width=6.5, height=6.5)
+fviz_pca_biplot(gonad.pca, label="var", invisible="quali", axes = c(2, 3), select.var= list(contrib=10),  habillage=key.gonad$pH.sex, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray30", "lightsteelblue", "steelblue")) + ggtitle(element_blank())  + theme(legend.position="top", legend.title=element_blank(), legend.key.size = unit(2.5,"line"), legend.text=element_text(size=14), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40")) + guides(shape = guide_legend(override.aes = list(size = 8)))
+dev.off()
+
+pdf(file="results/PCA/gonad-biplot-2x4.pdf", width=6.5, height=6.5)
+fviz_pca_biplot(gonad.pca, label="var", invisible="quali", axes = c(2, 4), select.var= list(contrib=10),  habillage=key.gonad$pH.sex, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray30", "lightsteelblue", "steelblue")) + ggtitle(element_blank())  + theme(legend.position="top", legend.title=element_blank(), legend.key.size = unit(2.5,"line"), legend.text=element_text(size=14), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40")) + guides(shape = guide_legend(override.aes = list(size = 8)))
+dev.off()
+
+pdf(file="results/PCA/gonad-biplot-3x4.pdf", width=6.5, height=6.5)
+fviz_pca_biplot(gonad.pca, label="var", invisible="quali", axes = c(3, 4), select.var= list(contrib=10),  habillage=key.gonad$pH.sex, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray30", "lightsteelblue", "steelblue")) + ggtitle(element_blank())  + theme(legend.position="top", legend.title=element_blank(), legend.key.size = unit(2.5,"line"), legend.text=element_text(size=14), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40")) + guides(shape = guide_legend(override.aes = list(size = 8)))
+dev.off()
+
+```
+
+
+## Make biplots based on variable loadings 
+```{r}
+
+# Should merge file I wrote out with annotations for gene names, and write loop for all plots here 
+
+fviz_pca_biplot(gonad.pca, label="none", invisible="quali", axes = c(1, 3), select.var= list(name = c(subset(gonad.eigen.top, pc =="PC2" | pc == "PC4")$gene)),  habillage=key.gonad$pH.sex, pointsize=4, col.var = "gray50") + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray40", "lightsteelblue3", "steelblue"))
+```
+
+
+
+```{r}
+17.4+13.7+9.6+9+7.2
+```
+
+
+## Multipanel plot, counts of genes diff expressed and sign. according to PC analysis 
+
+```{r}
+
+pH.p05.names <-rownames(subset(res.pH.Ordered, pvalue < 0.05)) #padj super high across the board - check out contigs with low pvalues instead ... 
+par(mfrow=(c(5,5)), mar=c(1,1,4,0), oma=c(5,4,2,2), col="gray25")
+for (i in 1:length(pH.p05.names)) {
+          plotCounts(dds.pH.DESeq, gene=pH.p05.names[i], intgroup="pH")
+}
+```
+
+
+# Repeat the above with larval samples 
+
+Just PC1 and PC2 significant, according to monticarlo test 
+
+```{r}
+larvae.trans <- as.matrix(t(larvae))
+larvae.pca <- prcomp(larvae.trans, scale=F)
+summary(larvae.pca)
+pca.eigenval(larvae.pca)
+screeplot(larvae.pca, bstick=TRUE)
+ordi.monte(larvae.trans, ord="pca", dim=8, perm = 1000, scale = F)
+
+```
+
+
+```{r}
+head(larvae.pca$rotation)
+```
+
+```{r}
+larvae.annot <- read.csv("results/DESeq/larvae.pH.p05-annot.csv", header=T)
+larvae.pc.structure <- pca.structure(larvae.pca, larvae.trans, dim=5, cutoff=0)[1:2]
+larvae.pc.diff <- as.data.frame(larvae.pc.structure[rownames(larvae.pc.structure) %in% larvae.annot$Gene,])
+larvae.pc.diff[1:2] <- lapply(larvae.pc.diff[1:2], function(x) as.numeric(as.character(x)))
+larvae.pc.diff <- larvae.pc.diff %>%
+    rownames_to_column('gene') %>%
+    filter_if(is.numeric, any_vars(abs(.) >= 0)) %>%
+    column_to_rownames('gene')
+larvae.pc1.genes <- rownames(subset(larvae.pc.diff, PC1!="NA")[1])
+larvae.pc2.genes <- rownames(subset(larvae.pc.diff, PC2!="NA")[2])
+```
+
+```{r}
+print(larvae.scores <- larvae.pca$x)
+
+# Check multivariate normality using pc scores 
+hist(unlist(as.data.frame(larvae.scores), use.names=FALSE))
+shapiro.test(unlist(as.data.frame(larvae.scores), use.names=FALSE))
+```
+
+```{r}
+ordiplot(larvae.pca, display = "sites")
+print(samples.l <- rownames(larvae.scores))
+key.larvae <- read.csv("data/quantseq_key.csv", header=T, na.strings = NA)[c("filename", "pH")]
+print(key.larvae <- key.larvae[match(samples.l, key.larvae$filename),])
+key.larvae$col <- c("gray40", "steelblue")[key.larvae$pH]
+plot(larvae.scores, cex=2.5, pch=16, col=key.larvae$col, xlab="PC1 (26.8%)", ylab="PC2 (22.3%)")
+```
+
+```{r}
+fviz_screeplot(larvae.pca, addlabels = TRUE, ylim = c(0, 30))
+fviz_contrib(larvae.pca, choice = "var", axes = 1, top = 10)
+fviz_contrib(larvae.pca, choice = "var", axes = 2, top = 10)
+fviz_pca_ind(larvae.pca, label="none", habillage=key.larvae$pH)
+fviz_pca_var(larvae.pca, select.var = list(contrib = 16)) #cool! 
+larvae.top.15 <- fviz_pca_var(larvae.pca, select.var = list(contrib = 16))$data
+larvae.top.13 <- fviz_pca_var(larvae.pca, select.var = list(contrib = 13))$data
+
+
+# Biplots with eigenvectors that are both 1) significant according to PC analysis, and 2) differentially expressed (pvalue<0.05)
+fviz_pca_biplot(larvae.pca, label="var", axes = c(1,2),  invisible="quali", select.var= list(name = c(larvae.pc1.genes, larvae.pc2.genes)), habillage=key.larvae$pH, pointsize=5, col.var = "gray30", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=2))) + scale_color_manual(values = c("gray50", "steelblue")) + ggtitle(label="PCA Biplot, larval gene expression by parental pH")  + theme(legend.position="top", legend.title=element_blank(), plot.title = element_text(hjust = 0.5, colour="gray40"), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40"))
+
+
+# Biplots with top 14 contriuting eigenvectors (top 6 per +/-)
+fviz_pca_biplot(larvae.pca, label="var", axes = c(1,2),  invisible="quali", select.var= list(contrib=13, names=c(larvae.pc1.genes, larvae.pc2.genes)), habillage=key.larvae$pH, pointsize=5, col.var = "gray30", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=2))) + scale_color_manual(values = c("gray50", "steelblue")) + ggtitle(label="PCA Biplot, larval gene expression by parental pH")  + theme(legend.position="top", legend.title=element_blank(), plot.title = element_text(hjust = 0.5, colour="gray40"), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40"))
+``` 
+
+```{r}
+# Extract the variables (genes) with largest loadings / eigenvalues 
+larvae.pc.eigenv <- as.data.frame(larvae.pca$rotation)[c("PC1", "PC2")]                 # convert to dataframe, keep only first 2 PC
+larvae.pc.eigenv <- tibble::rownames_to_column(larvae.pc.eigenv)                                      # make row names a column 
+
+top.1 <- larvae.pc.eigenv %>% arrange(PC1) %>% top_n(7, wt = PC1) %>% select(rowname, PC1)          # For each PC, extract eigenv. w/ biggest abs(loadings)
+bottom.1 <- larvae.pc.eigenv %>% arrange(PC1) %>% top_n(-2, wt = PC1) %>% select(rowname, PC1)    top.1$axis <- "PC1"
+bottom.1$axis <- "PC1"
+top.2 <- larvae.pc.eigenv %>% arrange(PC2) %>% top_n(2, wt = PC2) %>% select(rowname, PC2)
+bottom.2 <- larvae.pc.eigenv %>% arrange(PC2) %>% top_n(-2, wt = PC2) %>% select(rowname, PC2)
+top.2$axis <- "PC2"
+bottom.2$axis <- "PC2"
+
+temp <- list(top.1, bottom.1, top.2, bottom.2)
+
+for (i in 1:length(temp)){                                                                          # rename columns in all dataframes created above
+          colnames(temp[[i]]) <- c("gene", "eigenvalue", "pc")
+}
+larvae.eigen.top <- do.call(rbind, temp)                                                             # create one dataframe with top eigenvalues 
+write.csv(x = larvae.eigen.top, file = "results/DESeq/larvae.top.eigenvectors.csv")                   # write out file 
+
+# dcast(larvae.eigen.top, gene ~ pc, value.var = "eigenvalue")
+# diff <- larvae.pc.eigenv[larvae.pc.eigenv$rowname %in% as.character(larvae.annot$Gene),]
+
+```
+
+Much easier, alternative way (but requires hand typing)
+```{r}
+larvae.eigen.diff <- unique(c(rownames(larvae.top.13), larvae.pc1.genes, larvae.pc2.genes))
+
+as.data.frame(larvae.pc.eigenv[larvae.pc.eigenv$rowname %in% larvae.top.13,])
+as.data.frame(larvae.pc.structure[rownames(larvae.pc.structure) %in% larvae.top.16$name,]) #produce table with structure coefficients for the top 16 contributing genes 
+
+```
+
+
+```{r}
+
+# Biplots with eigenvectors that are either 1) in the top 13 contributors, or 2) differentially expressed (pvalue<0.05). Lots of duplicates 
+pdf(file = "results/PCA/larval-biplot.pdf", width = 6.5, height = 6.5)
+fviz_pca_biplot(larvae.pca, label="var", axes = c(1,2),  invisible="quali", select.var= list(name = c(larvae.eigen.diff)), habillage=key.larvae$pH, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=2))) + scale_color_manual(values = c("gray50", "steelblue")) + ggtitle(label="PCA Biplot, larval gene expression by parental pH")  + theme(legend.position="top", legend.title=element_blank(), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40"))
+dev.off()
+
+
+# Just samples (points) with sample labels
+fviz_pca_biplot(larvae.pca, label="ind", axes = c(1,2),  invisible= c("quali", "var"), select.var= list(name = c(larvae.eigen.top$gene)), habillage=key.larvae$pH, pointsize=6, col.var = "gray30", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=2))) + scale_color_manual(values = c("gray50", "steelblue")) + ggtitle(label="PCA Biplot, larval gene expression by parental pH")  + theme(legend.position="top", legend.title=element_blank(), plot.title = element_text(hjust = 0.5, colour="gray40"), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40"))
+
+```
+
+
+
+Compare PCA results between gonad and larvae. Any trends? 
+
+```{r}
+# Plot genes with sign. PC loadings in gonad against those in larve (take abolute value)
+colnames(gonad.pc.structure) <- c("gonadPC1", "gonadPC2", "gonadPC3", "gonadPC4")
+colnames(larvae.pc.structure) <- c("larvaePC1", "larvaePC2")
+pc.structure <- merge(x=gonad.pc.structure, y=larvae.pc.structure, by.x="row.names", by.y="row.names", all.x=F, all.y=F)
+pc.structure[2:7] <- lapply(pc.structure[2:7], function(x) as.numeric(as.character(x)))
+
+plot(x=abs(pc.structure$gonadPC1), y=abs(pc.structure$larvaePC1), main="gonad PC1 x larvae PC1")
+plot(x=abs(pc.structure$gonadPC1), y=abs(pc.structure$larvaePC2), main="gonad PC1 x larvae PC2")
+plot(x=abs(pc.structure$gonadPC2), y=abs(pc.structure$larvaePC1), main="gonad PC2 x larvae PC1")
+plot(x=abs(pc.structure$gonadPC2), y=abs(pc.structure$larvaePC2), main="gonad PC2 x larvae PC2")
+plot(x=abs(pc.structure$gonadPC3), y=abs(pc.structure$larvaePC1), main="gonad PC3 x larvae PC1")
+plot(x=abs(pc.structure$gonadPC3), y=abs(pc.structure$larvaePC2), main="gonad PC3 x larvae PC2")
+plot(x=abs(pc.structure$gonadPC4), y=abs(pc.structure$larvaePC1), main="gonad PC4 x larvae PC1")
+plot(x=abs(pc.structure$gonadPC4), y=abs(pc.structure$larvaePC2), main="gonad PC4 x larvae PC2")
+
+```
+
+# perMANOVA 
+
+```{r}
+# reload in the count data (untransformed)
+gonad.counts <- read.csv(file="results/multivariate/gonad.counts.csv", header=T, row.names = 1)
+gonad.counts.t <- log(gonad.counts+1)
+gonad.d<-vegdist(gonad.counts.t,"bray")
+
+larvae.counts <- read.csv(file="results/multivariate/larvae.counts.csv", header=T, row.names=1)
+larvae.counts.t <- log(larvae.counts+1)
+larvae.d<-vegdist(larvae.counts.t,"bray")
+perm.grps <- read.csv("data/quantseq_key.csv", header=T, na.strings = NA, row.names=1)[c("pH", "sex2", "tissue", "temperature")]
+perm.grps[perm.grps$tissue=="larvae",]
+
+# permANOVA and dispersion test, gonad by pH
+print(gonad.perm.ph <- adonis(gonad.counts.t ~ pH, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='bray')) #no global pH diff. 
+print(gonad.bdp.ph<-betadisper(gonad.d,subset(perm.grps, tissue=="gonad")$pH))
+anova(gonad.bdp.ph) #no difference in dispersion 
+
+# permANOVA and dispersion test, gonad by sex
+print(gonad.perm.sex <- adonis(gonad.counts.t ~ sex2, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='bray')) #no global sex diff. 
+print(gonad.bdp.sex<-betadisper(gonad.d,subset(perm.grps, tissue=="gonad")$sex2))
+anova(gonad.bdp.sex) #no difference in dispersion 
+
+# permANOVA and dispersion test, gonad by sex
+print(gonad.perm.phsex <- adonis(gonad.counts.t ~ pH + sex2, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='bray')) #no global sex+pH diff. 
+
+# permANOVA and dispersion test, gonad by sex
+print(gonad.perm.temp <- adonis(gonad.counts.t ~ temperature, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='bray')) #no global temp diff. 
+print(gonad.bdp.temp<-betadisper(gonad.d,subset(perm.grps, tissue=="gonad")$temperature))
+anova(gonad.bdp.temp) #no difference in dispersion 
+
+# permANOVA and dispersion test, larvae by parental pH
+print(larvae.perm.ph <- adonis(larvae.counts.t ~ pH, data=subset(perm.grps, tissue=="larvae") ,permutations=1000,method='bray')) #no global pH diff. 
+print(larvae.bdp.ph<-betadisper(larvae.d,subset(perm.grps, tissue=="larvae")$pH))
+anova(larvae.bdp.ph) #no difference in dispersion 
+
+larvae.d
+```
+
+
+
