@@ -40,13 +40,7 @@ This is what I still need to do, probably(?):
 Raw and processed data files, or links to data files if >100MB   
   - **quantseq_key.csv**: Important metadata - sequence file name and corresponding sample number, treatment, etc.  
   - **quantseq-sample-origin.md**: Information on the samples sent to Katherine 
-  - **fastqc/**: FastQC results of untrimmed/ and trimmed/ RNASeq data 
   - **illumina-raw/**: QuantSeq raw data files. Note, most are larger than 100MB, but can be downloaded from owl: [wetgenes/20181109_QS_Laura](http://owl.fish.washington.edu/wetgenes/20181109_QS_Laura/)  
-  - **tagseq_trim/**: A bunch of versions of my tagseq data: trimmed fastq (.trim), SAM files (.sam), sorted BAM files (.bam), and BAM index files (.bai).
-  - **test-data/**: Practice data from Katherine for pipeline developing   
-    - oly_Trinityv2.txt: raw read counts mapped to each gene in an assembled transcriptome
-    - trinity_go_annotations.txt: the Gene Ontology annotations for mapped genes in the oly_Trinityv2.txt file.   
-  - **trimgalore/**: RNASeq data that has veen trimmed using `trimgalore!`. This was not actually used for transcriptome assembly, since I used Trimmomatic built into the Trinity program.  
 
 ### notebooks  
 RMarkdown or Jupyter notebooks of each step in processing and analysis. 
@@ -78,9 +72,15 @@ Analyzed data, etc.
   - **blast/**: Blast results, transcriptome against Uniprot database; ps-oly-gonad-unitprot_blastx.tab.  
   - **bowtie**: results of Bowtie - Need to move my files from the data/tag-seq/ directory here.  
   - **DESeq**: Important! Transformed gene counts, diff. expressed genes.  
+  - **fastqc/**: FastQC results of untrimmed/ and trimmed/ RNASeq data 
   - **kallisto**: Results froj Kallisto for gene pseudo-counts. Most important files: 
     - 1129matrix-trans_counts.isoform.counts.matrix: The 'counts.matrix' file is used for downstream analyses of differential expression.  
     - 1129matrix-trans_counts.isoform.TMM.EXPR.matrix: The TMM.EXPR.matrix file is used as the gene expression matrix in most other analyses; counts are cross-sample normalized. <--- need to figure out exactly how!  
+  - **tagseq_trim/**: A bunch of versions of my tagseq data: trimmed fastq (.trim), SAM files (.sam), sorted BAM files (.bam), and BAM index files (.bai).
+  - **test-data/**: Practice data from Katherine for pipeline developing   
+    - oly_Trinityv2.txt: raw read counts mapped to each gene in an assembled transcriptome
+    - trinity_go_annotations.txt: the Gene Ontology annotations for mapped genes in the oly_Trinityv2.txt file.   
+  - **trimgalore/**: RNASeq data that has veen trimmed using `trimgalore!`. This was not actually used for transcriptome assembly, since I used Trimmomatic built into the Trinity program.  
 
 ### scripts 
 R or bash scripts   
@@ -90,7 +90,9 @@ R or bash scripts
 
 ### In this parent directory  
 README.md  
-laura-quantseq.Rproj: RMarkdown project file where all R scripts are executed   
+  - **laura-quantseq.Rproj**: RMarkdown project file where all R scripts are executed   
+  - **Process-presentation.pptx & .pdf**:  presentation file with bioinformatics and data analysis workflow   
+
 
 ## Project Timeline: 
 - Week 4: Hunt and gather. Read through [Misha Matz's lab resources](https://github.com/z0on/tag-based_RNAseq), plan the necessary steps I'll need to take to process QuantSeq data, identify programs/resources to accomplish each step. Identify pipeline to assemble transcriptome using just Puget Sound Oly RNASeq data.  
