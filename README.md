@@ -2,6 +2,8 @@
 
 ## _Carryover effects of parental low pH exposure in the Olympia oyster (Ostrea lurida)_  
 
+[Check out my draft manuscript](https://docs.google.com/document/d/1UTCyimXu38LiepsZhmBIv9qMWto113zfZkgn-tIHCT8/edit?usp=sharing)
+
 Using QuantSeq data I hope to answer these questions: 
   - Does low pH exposure affect gene expression in _O. lurida_ gonad?  
   - Does parental low pH exposure affect gene expression in larvae?  
