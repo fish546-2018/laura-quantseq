@@ -1,0 +1,13 @@
+{
+	"n_targets": 143867,
+	"n_bootstraps": 0,
+	"n_processed": 5586,
+	"n_pseudoaligned": 1720,
+	"n_unique": 1396,
+	"p_pseudoaligned": 30.8,
+	"p_unique": 25.0,
+	"kallisto_version": "0.44.0",
+	"index_version": 10,
+	"start_time": "Thu Nov 29 21:18:41 2018",
+	"call": "kallisto quant -l 200 -s 80 -i /Users/laura/Documents/roberts-lab/laura-quantseq/results/kallisto/../../results/trinity/20181029-olurida-gonad-assembly_clust.fasta.kallisto_idx -o CP-KS-LibL-L47-L_S33_L006_R1_001/ --single /Users/laura/Documents/roberts-lab/laura-quantseq/results/kallisto/../../data/tagseq_trim/CP-KS-LibL-L47-L_S33_L006_R1_001.fastq.trim"
+}

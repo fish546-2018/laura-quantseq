@@ -1,0 +1,26 @@
+if (! require(edgeR)) {
+   source("https://bioconductor.org/biocLite.R")
+   biocLite("edgeR")
+   library(edgeR)
+}
+
+data = read.table("/Users/laura/Documents/roberts-lab/laura-quantseq/results/kallisto/1129matrix-trans_counts.isoform.counts.matrix", header=T, row.names=1, com='')
+col_ordering = c(16,18)
+rnaseqMatrix = data[,col_ordering]
+rnaseqMatrix = round(rnaseqMatrix)
+rnaseqMatrix = rnaseqMatrix[rowSums(cpm(rnaseqMatrix) > 1) >= 1,]
+conditions = factor(c(rep("CP-KS-LibL-L35-L_S31_L006_R1_001", 1), rep("CP-KS-LibL-L39-L_S29_L006_R1_001", 1)))
+
+exp_study = DGEList(counts=rnaseqMatrix, group=conditions)
+exp_study = calcNormFactors(exp_study)
+et = exactTest(exp_study, pair=c("CP-KS-LibL-L35-L_S31_L006_R1_001", "CP-KS-LibL-L39-L_S29_L006_R1_001"), dispersion=0.4)
+tTags = topTags(et,n=NULL)
+result_table = tTags$table
+result_table = data.frame(sampleA="CP-KS-LibL-L35-L_S31_L006_R1_001", sampleB="CP-KS-LibL-L39-L_S29_L006_R1_001", result_table)
+result_table$logFC = -1 * result_table$logFC
+write.table(result_table, file='1129matrix-trans_counts.isoform.counts.matrix.CP-KS-LibL-L35-L_S31_L006_R1_001_vs_CP-KS-LibL-L39-L_S29_L006_R1_001.edgeR.DE_results', sep='	', quote=F, row.names=T)
+write.table(rnaseqMatrix, file='1129matrix-trans_counts.isoform.counts.matrix.CP-KS-LibL-L35-L_S31_L006_R1_001_vs_CP-KS-LibL-L39-L_S29_L006_R1_001.edgeR.count_matrix', sep='	', quote=F, row.names=T)
+source("/Applications/bioinformatics/trinityrnaseq-Trinity-v2.8.3/Analysis/DifferentialExpression/R/rnaseq_plot_funcs.R")
+pdf("1129matrix-trans_counts.isoform.counts.matrix.CP-KS-LibL-L35-L_S31_L006_R1_001_vs_CP-KS-LibL-L39-L_S29_L006_R1_001.edgeR.DE_results.MA_n_Volcano.pdf")
+plot_MA_and_Volcano(rownames(result_table), result_table$logCPM, result_table$logFC, result_table$FDR)
+dev.off()
