@@ -146,4 +146,4 @@ pH <- c("gray30", "steelblue")[counts.ts.gonad.s.a$pH]
 pheatmap(counts.ts.gonad.s.a.mat, Rowv=NA, Colv=NA, scale="column", annotation_row = pH, annotation_colors=c("steelblue", "gray30")) #red=low pH, blue=ambient pH genes sorted by average
 ```
 
-
+# fix the heat map 

@@ -11,7 +11,7 @@ if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, FUN = function(X) {
   do.call("require", list(X)) 
 })
-getwd()
+setwd("/Users/laura/Documents/roberts-lab/laura-quantseq")
 source("references/biostats.R")
 ```
 
@@ -37,6 +37,8 @@ pHLarvae.p05.names <- as.character(unlist(as.data.frame(read.csv(file="results/D
 ```
 
 How many contigs? 
+# 12,894 gonad contigs
+# 4,410 larval contigs
 
 ```{r}
 nrow(gonad)
@@ -51,7 +53,7 @@ gonad.pca <- prcomp(gonad.trans, scale=F) #scale=F for variance-covariance matri
 summary(gonad.pca)
 pca.eigenval(gonad.pca) #The Proporation of Variance = %variance 
 screeplot(gonad.pca, bstick=TRUE)
-ordi.monte(gonad.trans, ord="pca", dim=8, perm = 1000, scale = F)
+ordi.monte(gonad.trans, ord="pca", dim=8, perm = 1000, scale = F, plot = F)
 ```
 
 PC1, 2, 3 and 4 appear significant! 
@@ -148,27 +150,21 @@ as.data.frame(gonad.pc.structure[rownames(gonad.pc.structure) %in% as.character(
 for (i in 1:3) {
           print(fviz_pca_biplot(gonad.pca, label="none", invisible="quali", axes = c(i, i+1), select.var= list(name = c(gonad.pc.genes[[i]], gonad.pc.genes[[i+1]])), habillage=key.gonad$pH.sex, pointsize=4, col.var = "gray50") + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray40", "lightsteelblue3", "steelblue"))) #+ scale_color_brewer(palette="Paired") + theme_minimal())
 }
-
 for (i in 1:2) {
           print(fviz_pca_biplot(gonad.pca, label="none", invisible="quali", axes = c(i, 4), select.var= list(name = c(gonad.pc.genes[[i]], gonad.pc4.genes)),  habillage=key.gonad$pH.sex, pointsize=4, col.var = "gray50") + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray40", "lightsteelblue3", "steelblue")))     
 }
-
-
 fviz_pca_biplot(gonad.pca, label="none", invisible="quali", axes = c(1, 3), select.var= list(name = c(gonad.pc1.genes, gonad.pc3.genes)),  habillage=key.gonad$pH.sex, pointsize=4, col.var = "gray50") + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray40", "lightsteelblue3", "steelblue"))
 ```
 
 
 ## Biplots using the top 10 
 ```{r}
-
 pdf(file="results/PCA/gonad-biplot-for-title.pdf", width=6.5, height=6.5)
 fviz_pca_biplot(gonad.pca, label="var", invisible="quali", axes = c(1, 2), select.var= list(contrib=10),  habillage=key.gonad$pH.sex, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray30", "lightsteelblue", "steelblue")) + ggtitle(element_blank())  + theme(legend.position="top", legend.title=element_blank(), legend.key.size = unit(2.5,"line"), legend.text=element_text(size=14), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40")) + guides(shape = guide_legend(override.aes = list(size = 8))) + ggtitle(label="PCA Biplots, gonad tissue by pH and sex") 
 dev.off()
 
-
-
 pdf(file="results/PCA/gonad-biplot-1x3.pdf", width=6.5, height=6.5)
-fviz_pca_biplot(gonad.pca, label="var", invisible="quali", axes = c(1, 3), select.var= list(contrib=10),  habillage=key.gonad$pH.sex, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray30", "lightsteelblue", "steelblue")) + ggtitle(element_blank())  + theme(legend.position="top", legend.title=element_blank(), legend.key.size = unit(2.5,"line"), legend.text=element_text(size=14), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40")) + guides(shape = guide_legend(override.aes = list(size = 8)))
+fviz_pca_biplot(gonad.pca, label=F, invisible=c("quali", "var"), axes = c(1, 3), habillage=key.gonad$pH, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray30", "steelblue")) + ggtitle(element_blank())  + theme(legend.position="top", legend.title=element_blank(), legend.key.size = unit(2.5,"line"), legend.text=element_text(size=14), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40")) + guides(shape = guide_legend(override.aes = list(size = 8)))
 dev.off()
 
 pdf(file="results/PCA/gonad-biplot-1x4.pdf", width=6.5, height=6.5)
@@ -192,7 +188,6 @@ dev.off()
 
 ## Make biplots based on variable loadings 
 ```{r}
-
 # Should merge file I wrote out with annotations for gene names, and write loop for all plots here 
 
 fviz_pca_biplot(gonad.pca, label="none", invisible="quali", axes = c(1, 3), select.var= list(name = c(subset(gonad.eigen.top, pc =="PC2" | pc == "PC4")$gene)),  habillage=key.gonad$pH.sex, pointsize=4, col.var = "gray50") + scale_shape_manual(values=c(rep(16, times=4))) + scale_color_manual(values = c("gray60", "gray40", "lightsteelblue3", "steelblue"))
@@ -208,7 +203,6 @@ fviz_pca_biplot(gonad.pca, label="none", invisible="quali", axes = c(1, 3), sele
 ## Multipanel plot, counts of genes diff expressed and sign. according to PC analysis 
 
 ```{r}
-
 pH.p05.names <-rownames(subset(res.pH.Ordered, pvalue < 0.05)) #padj super high across the board - check out contigs with low pvalues instead ... 
 par(mfrow=(c(5,5)), mar=c(1,1,4,0), oma=c(5,4,2,2), col="gray25")
 for (i in 1:length(pH.p05.names)) {
@@ -218,7 +212,6 @@ for (i in 1:length(pH.p05.names)) {
 
 
 # Repeat the above with larval samples 
-
 Just PC1 and PC2 significant, according to monticarlo test 
 
 ```{r}
@@ -260,10 +253,11 @@ shapiro.test(unlist(as.data.frame(larvae.scores), use.names=FALSE))
 ```{r}
 ordiplot(larvae.pca, display = "sites")
 print(samples.l <- rownames(larvae.scores))
-key.larvae <- read.csv("data/quantseq_key.csv", header=T, na.strings = NA)[c("filename", "pH")]
+key.larvae <- read.csv("data/quantseq_key.csv", header=T, na.strings = NA)[c("filename", "pH", "cal.date")]
 print(key.larvae <- key.larvae[match(samples.l, key.larvae$filename),])
 key.larvae$col <- c("gray40", "steelblue")[key.larvae$pH]
 plot(larvae.scores, cex=2.5, pch=16, col=key.larvae$col, xlab="PC1 (26.8%)", ylab="PC2 (22.3%)")
+text(larvae.scores, labels=key.larvae$cal.date) #add labels for the cal. date larvae were collected/sampled
 ```
 
 ```{r}
@@ -272,7 +266,7 @@ fviz_contrib(larvae.pca, choice = "var", axes = 1, top = 10)
 fviz_contrib(larvae.pca, choice = "var", axes = 2, top = 10)
 fviz_pca_ind(larvae.pca, label="none", habillage=key.larvae$pH)
 fviz_pca_var(larvae.pca, select.var = list(contrib = 16)) #cool! 
-larvae.top.15 <- fviz_pca_var(larvae.pca, select.var = list(contrib = 16))$data
+larvae.top.15 <- fviz_pca_var(larvae.pca, select.var = list(contrib = 15))$data
 larvae.top.13 <- fviz_pca_var(larvae.pca, select.var = list(contrib = 13))$data
 
 
@@ -280,8 +274,14 @@ larvae.top.13 <- fviz_pca_var(larvae.pca, select.var = list(contrib = 13))$data
 fviz_pca_biplot(larvae.pca, label="var", axes = c(1,2),  invisible="quali", select.var= list(name = c(larvae.pc1.genes, larvae.pc2.genes)), habillage=key.larvae$pH, pointsize=5, col.var = "gray30", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=2))) + scale_color_manual(values = c("gray50", "steelblue")) + ggtitle(label="PCA Biplot, larval gene expression by parental pH")  + theme(legend.position="top", legend.title=element_blank(), plot.title = element_text(hjust = 0.5, colour="gray40"), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40"))
 
 
-# Biplots with top 14 contriuting eigenvectors (top 6 per +/-)
-fviz_pca_biplot(larvae.pca, label="var", axes = c(1,2),  invisible="quali", select.var= list(contrib=13, names=c(larvae.pc1.genes, larvae.pc2.genes)), habillage=key.larvae$pH, pointsize=5, col.var = "gray30", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=2))) + scale_color_manual(values = c("gray50", "steelblue")) + ggtitle(label="PCA Biplot, larval gene expression by parental pH")  + theme(legend.position="top", legend.title=element_blank(), plot.title = element_text(hjust = 0.5, colour="gray40"), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40"))
+# Biplots with "diff. expressed"" genes that are identified via blast: 
+fviz_pca_biplot(larvae.pca, label="var", axes = c(1,2),  invisible="quali", select.var= list(names=c("rpl8*","mt:ND5*","COI*","Tuba3a*","USP47*", "TBC1D2*")), habillage=key.larvae$pH, pointsize=6, col.var = "gray30", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=2))) + scale_color_manual(values = c("gray50", "steelblue")) + ggtitle(label="PCA Biplot, larval gene expression by parental pH")  + theme(legend.position="top", legend.title=element_blank(), plot.title = element_text(hjust = 0.5, colour="gray40"), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40"))
+
+# Eigenvectors, no labels 
+fviz_pca_biplot(larvae.pca, label="none", axes = c(1,2),  invisible="quali", select.var= list(names=c("rpl8*","mt:ND5*","COI*","Tuba3a*","USP47*", "TBC1D2*")), habillage=key.larvae$pH, pointsize=6, col.var = "gray30", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=2))) + scale_color_manual(values = c("gray50", "steelblue")) + ggtitle(label="PCA Biplot, larval gene expression by parental pH")  + theme(legend.position="top", legend.title=element_blank(), plot.title = element_text(hjust = 0.5, colour="gray40"), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40"))
+
+# Biplots with no eigenvectors
+fviz_pca_biplot(larvae.pca, label=F, axes = c(1,2),  invisible=c("quali", "var"), habillage=key.larvae$pH, pointsize=5, col.var = "gray30", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=2))) + scale_color_manual(values = c("gray50", "steelblue")) + ggtitle(label="PCA Biplot, larval gene expression by parental pH")  + theme(legend.position="top", legend.title=element_blank(), plot.title = element_text(hjust = 0.5, colour="gray40"), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40"))
 ``` 
 
 ```{r}
@@ -321,7 +321,6 @@ as.data.frame(larvae.pc.structure[rownames(larvae.pc.structure) %in% larvae.top.
 
 
 ```{r}
-
 # Biplots with eigenvectors that are either 1) in the top 13 contributors, or 2) differentially expressed (pvalue<0.05). Lots of duplicates 
 pdf(file = "results/PCA/larval-biplot.pdf", width = 6.5, height = 6.5)
 fviz_pca_biplot(larvae.pca, label="var", axes = c(1,2),  invisible="quali", select.var= list(name = c(larvae.eigen.diff)), habillage=key.larvae$pH, pointsize=6, col.var = "gray20", repel=TRUE, ggtheme = theme_minimal()) + scale_shape_manual(values=c(rep(16, times=2))) + scale_color_manual(values = c("gray50", "steelblue")) + ggtitle(label="PCA Biplot, larval gene expression by parental pH")  + theme(legend.position="top", legend.title=element_blank(), plot.title = element_text(hjust = 0.5, colour="gray30", size = 18), axis.title.y = element_text(colour = "gray40"), axis.title.x = element_text(colour = "gray40"))
@@ -361,39 +360,149 @@ plot(x=abs(pc.structure$gonadPC4), y=abs(pc.structure$larvaePC2), main="gonad PC
 # reload in the count data (untransformed)
 gonad.counts <- read.csv(file="results/multivariate/gonad.counts.csv", header=T, row.names = 1)
 gonad.counts.t <- log(gonad.counts+1)
-gonad.d<-vegdist(gonad.counts.t,"bray")
+gonad.d<-vegdist(gonad.counts.t,"euclidean")
 
 larvae.counts <- read.csv(file="results/multivariate/larvae.counts.csv", header=T, row.names=1)
 larvae.counts.t <- log(larvae.counts+1)
-larvae.d<-vegdist(larvae.counts.t,"bray")
+larvae.d<-vegdist(larvae.counts.t,"euclidean")
 perm.grps <- read.csv("data/quantseq_key.csv", header=T, na.strings = NA, row.names=1)[c("pH", "sex2", "tissue", "temperature")]
 perm.grps[perm.grps$tissue=="larvae",]
 
 # permANOVA and dispersion test, gonad by pH
-print(gonad.perm.ph <- adonis(gonad.counts.t ~ pH, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='bray')) #no global pH diff. 
+print(gonad.perm.ph <- adonis(gonad.counts.t ~ pH, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='euclidean')) #no global pH diff. 
 print(gonad.bdp.ph<-betadisper(gonad.d,subset(perm.grps, tissue=="gonad")$pH))
 anova(gonad.bdp.ph) #no difference in dispersion 
 
 # permANOVA and dispersion test, gonad by sex
-print(gonad.perm.sex <- adonis(gonad.counts.t ~ sex2, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='bray')) #no global sex diff. 
+print(gonad.perm.sex <- adonis(gonad.counts.t ~ sex2, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='euclidean')) #no global sex diff. 
 print(gonad.bdp.sex<-betadisper(gonad.d,subset(perm.grps, tissue=="gonad")$sex2))
 anova(gonad.bdp.sex) #no difference in dispersion 
 
-# permANOVA and dispersion test, gonad by sex
-print(gonad.perm.phsex <- adonis(gonad.counts.t ~ pH + sex2, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='bray')) #no global sex+pH diff. 
+# permANOVA and dispersion test, gonad by pH & sex
+print(gonad.perm.phsex <- adonis(gonad.counts.t ~ pH + sex2, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='euclidean')) #no global sex+pH diff. 
 
-# permANOVA and dispersion test, gonad by sex
-print(gonad.perm.temp <- adonis(gonad.counts.t ~ temperature, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='bray')) #no global temp diff. 
+# permANOVA and dispersion test, gonad by temperature
+print(gonad.perm.temp <- adonis(gonad.counts.t ~ temperature, data=subset(perm.grps, tissue=="gonad") ,permutations=1000,method='euclidean')) #no global temp diff. 
 print(gonad.bdp.temp<-betadisper(gonad.d,subset(perm.grps, tissue=="gonad")$temperature))
 anova(gonad.bdp.temp) #no difference in dispersion 
 
 # permANOVA and dispersion test, larvae by parental pH
-print(larvae.perm.ph <- adonis(larvae.counts.t ~ pH, data=subset(perm.grps, tissue=="larvae") ,permutations=1000,method='bray')) #no global pH diff. 
+print(larvae.perm.ph <- adonis(larvae.counts.t ~ pH, data=subset(perm.grps, tissue=="larvae") ,permutations=1000,method='euclidean')) #no global pH diff. 
 print(larvae.bdp.ph<-betadisper(larvae.d,subset(perm.grps, tissue=="larvae")$pH))
 anova(larvae.bdp.ph) #no difference in dispersion 
 
 larvae.d
 ```
 
+## Plot gonad gene expression for those interesting from biplot and DeSeq:
 
+```{r}
+gonad.biplot.names <- c("TRINITY_DN4797_c0_g1_i5", "TRINITY_DN104_c0_g2_i5", "TRINITY_DN104_c0_g2_i6", "TRINITY_DN1689_c0_g1_i6", "TRINITY_DN42000_c0_g1_i6", "TRINITY_DN42000_c0_g1_i1", "TRINITY_DN95802_c0_g1_i1", "TRINITY_DN4822_c0_g1_i1", "TRINITY_DN2748_c0_g1_i3")
+for (i in 1:length(test)) {
+          plotCounts(dds.pH.DESeq, gene=gonad.biplot.names[i], intgroup="pH")
+}
+
+# those with p<0.05
+for (i in 1:length(pH.p05.names)) {
+          plotCounts(dds.pH.DESeq, gene=pH.p05.names[i], intgroup="pH")
+}
+```
+
+Upregulated in low pH: 
+  TRINITY_DN60650_c0_g1_i2: HSP70
+  TRINITY_DN715_c0_g1_i3: CtBP, transcription 
+  TRINITY_DN300_c0_g2_i1:  Elongation factor 1-delta, protein biosynthesis
+  TRINITY_DN1745_c1_g1_i1: chmp2b-related, protein-transport 
+  TRINITY_DN944_c5_g1_i3: Arf6-related; ADP-ribosylation factor 6, cytoskeleton related 
+  TRINITY_DN721_c0_g2_i2: Thymidylate synthase, nucleotide biosynthesis
+  TRINITY_DN2426_c0_g1_i7: CHAC2-related, 	Glutathione-specific gamma-glutamylcyclotransferase 2. Acts as coenzyme, antioxidant 
+
+Downregulated in low pH: 
+  TRINITY_DN4822_c0-g1_i1:  cytochrome c oxidase, aerobic respiration 
+  TRINITY_DN95802_c0_g1_i1: rps23, 40S ribosomal protein S23 (kinda)
+  TRINITY_DN2385_c0_g2_i1: Endoglucanase, cellulose catabolic process
+  TRINITY_DN3262_c0_g1_i3: unknown
+  TRINITY_DN6873_c0_g3_i2: Coactosin-like protein, defense response to fungus
+  TRINITY_DN208_c0_g1_i2: Haloacid dehalogenase-like hydrolase domain-containing 5, glycophospholipid biosynthesis process
+  TRINITY_DN810_c0_g1_i4: qki-b, protein quaking-B, translation 
+
+
+
+### plot gonad gene counts for those with p-values below 0.05 and visually convincing :) 
+
+```{r}
+up <- c("TRINITY_DN60650_c0_g1_i2", "TRINITY_DN715_c0_g1_i3", "TRINITY_DN300_c0_g2_i1", "TRINITY_DN1745_c1_g1_i1", "TRINITY_DN944_c5_g1_i3", "TRINITY_DN721_c0_g2_i2", "TRINITY_DN2426_c0_g1_i7")
+up.names <- c("Heat Shock Protein 70", "C-terminal-binding protein", "Elongation factor 1-delta,\n protein biosynthesis", "chmp2b (related)", "ADP-ribosylation\nfactor 6 (related)", "Thymidylate synthase", "Glutathione-specific gamma-\nglutamylcyclotransferase 2\n(related)")
+
+pdf(file = "results/DESeq/gonad-upreg-plots.pdf", width=8.75, height=5)
+par(mfrow=(c(2,4)), mar=c(2,1,4,2), oma=c(1,4,4,2), col="gray25")
+for (i in 1:length(up.names)) {
+          y.lim <- c(0,1.1*max(assay(dds.pH.DESeq)[rownames(assay(dds.pH.DESeq)) == up[i],]))
+          plotCounts(dds.pH.DESeq, gene=up[i], intgroup="pH", col="gray40", bg=c("gray50", "steelblue")[dds.pH.DESeq$pH], pch=21, cex=2, transform=FALSE, normalized=TRUE, ylim=c(y.lim*1.2), axes=FALSE, xlab = NA, main=up.names[i], col.main="gray40")
+          axis(side=2,las=1,at=pretty(c(0,y.lim*1.1)))
+          #if (i==plot.axes[i]) {
+          #          axis(side=1)
+          #}
+}
+mtext(side=2,text="Normalized counts", outer=T,line=2, col="gray40")
+mtext(side=3,text="Gonad genes counts by pH, upregulated in low pH (blast identified)", outer=T,line=-.5, col="gray30")
+dev.off()
+
+# Downregulated genes 
+
+down <- c("TRINITY_DN4822_c0_g1_i1", "TRINITY_DN95802_c0_g1_i1", "TRINITY_DN2385_c0_g2_i1", "TRINITY_DN6873_c0_g3_i2", "TRINITY_DN208_c0_g1_i2", "TRINITY_DN810_c0_g1_i4")
+down.names <- c("cytochrome c oxidase", "40S ribosomal protein S23", "Endoglucanase", "Coactosin-like protein", "Haloacid dehalogenase-like\nhydrolase domain-containing 5", "protein quaking-B")
+
+pdf(file = "results/DESeq/gonad-downreg-plots.pdf", width=6.75, height=5)
+par(mfrow=(c(2,3)), mar=c(2,1,4,2), oma=c(1,4,4,2), col="gray25")
+for (i in 1:length(down.names)) {
+          y.lim <- c(0,max(assay(dds.pH.DESeq)[rownames(assay(dds.pH.DESeq)) == down[i],]))
+          plotCounts(dds.pH.DESeq, gene=down[i], intgroup="pH", col="gray40", bg=c("gray50", "steelblue")[dds.pH.DESeq$pH], pch=21, cex=2, transform=FALSE, normalized=TRUE, ylim=c(y.lim*1.2), axes=FALSE, xlab = NA, main=down.names[i], col.main="gray40")
+          axis(side=2,las=1,at=pretty(c(0,y.lim*1.1)))
+          #if (i==plot.axes[i]) {
+          #          axis(side=1)
+          #}
+}
+mtext(side=2,text="Normalized counts", outer=T,line=2, col="gray40")
+mtext(side=3,text="Gonad genes counts by pH, downregulated in low pH (blast identified)", outer=T,line=-.5, col="gray30")
+dev.off()
+
+# Genes selected for NSA presentation 
+NSA <- c("TRINITY_DN60650_c0_g1_i2", "TRINITY_DN4822_c0_g1_i1")
+NSA.names <- c("heat shock\nprotein 70", "cytochrome\nc-oxidase\nsubunit 1")
+par(mfrow=(c(1,2)), mar=c(2,1,4,2), oma=c(1,4,4,2), col="gray25")
+for (i in 1:length(NSA.names)) {
+          y.lim <- c(0,1.3*max(assay(dds.pH.DESeq)[rownames(assay(dds.pH.DESeq)) == NSA[i],]))
+          plotCounts(dds.pH.DESeq, gene=NSA[i], intgroup="pH", col="gray40", bg=c("gray50", "steelblue")[dds.pH.DESeq$pH], pch=21, cex=1.5, transform=FALSE, normalized=TRUE, ylim=c(y.lim*1.2), axes=FALSE, xlab = NA, main=NSA.names[i], col.main="gray40")
+          axis(side=2,las=1,at=pretty(c(0,y.lim*1.1)))
+}
+mtext(side=2,text="Normalized counts", outer=T,line=2, col="gray40")
+mtext(side=3,text="Gonad genes counts by pH (blast identified)", outer=T,line=0.5, col="gray30")
+```
+
+## Replot larval genes, without "unknowns"
+
+```{r}
+larval <-  c("TRINITY_DN2166_c0_g1_i6", "TRINITY_DN3045_c1_g1_i1", "TRINITY_DN4986_c0_g1_i3", "TRINITY_DN109163_c0_g1_i1")
+
+larval.names <- c("Ubiquitin carboxyl-\nterminal hydrolase 47", "Tubulin\nalpha-3 chain", "Cytochrome c oxidase\nsubunit 1", "NADH-ubiquinone\noxidoreductase chain 5")
+
+pdf(file = "results/DESeq/larval-diff-plots.pdf", width=4.5, height=6)
+par(mfrow=(c(2,2)), mar=c(2,1,4,2), oma=c(1,4,4,2), col="gray25")
+
+for (i in 1:length(larval)) {
+          y.lim <- c(0,max(assay(ddsLarvae.pH.DESeq)[rownames(assay(ddsLarvae.pH.DESeq)) == larval[i],]))
+          plotCounts(ddsLarvae.pH.DESeq, gene=pHLarvae.p05.names[i], intgroup="pH", col="gray40", bg=c("gray50", "steelblue")[ddsLarvae.pH.DESeq$pH], pch=21, cex=1.5, transform=FALSE, normalized=TRUE, ylim=c(y.lim*1.5), axes=FALSE, xlab = NA, main=larval.names[i], col.main="gray40")
+          axis(side=2,las=1,at=pretty(c(0,y.lim*1.1)))
+          #if (i==plot.axes[i]) {
+          #          axis(side=1)
+          #}
+}
+mtext(side=2,text="Normalized counts", outer=T,line=2, col="gray40")
+mtext(side=3,text="Larval gene counts by parental pH\nDifferentially expressed genes (blast identified)", outer=T,line=.5, col="gray30")
+dev.off()
+
+plotCounts(ddsLarvae.pH.DESeq, gene="TRINITY_DN60650_c0_g1_i2", intgroup="pH", col="gray40", bg=c("gray50", "steelblue")[ddsLarvae.pH.DESeq$pH], pch=21, cex=1.5, transform=FALSE, normalized=TRUE, axes=FALSE, xlab = NA, main="HSP70", col.main="gray40")
+          axis(side=2,las=1,at=pretty(c(0,y.lim*1.1)))
+```
 
