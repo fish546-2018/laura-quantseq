@@ -1,0 +1,216 @@
+---
+title: "Comparing larval size by parental treatment"
+author: "Laura H Spencer"
+date: "9/6/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Load libraries 
+
+```{r, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(car)
+library(arm)
+```
+
+#### Load data and reformat 
+
+```{r}
+larvae.size <- read.csv("../data/2019-08_new-larvae-measurements.csv", header=T, stringsAsFactors = F)
+larvae.size[c("Sample", "Population", "Temperature", "pH")] <- lapply(larvae.size[c("Sample", "Population", "Temperature", "pH")], factor)
+larvae.size$DateCollected <- as.Date(larvae.size$DateCollected, format = "%m/%d/%y")
+```
+
+#### Correct size data 
+
+Scope was not calibrated accurately. Based on measurements of 12 known lengths, multiply lengths by 1.405669
+
+MaxFeret = best estimate of shell width (length running parallel to hinge) 
+MinFeret = best estimate of shell heigh (length running perpendicular to hinge) 
+
+```{r}
+larvae.size$MaxFeret.cor <- larvae.size$MaxFeret*1.405669 
+larvae.size$MinFeret.cor <- larvae.size$MinFeret*1.405669 
+```
+
+Inspect size data  
+
+```{r}
+summary(larvae.size[c("Length", "Width", "MaxFeret", "MinFeret", "MaxFeret90", "MaxFeret.cor", "MinFeret.cor")]) 
+aggregate(MaxFeret.cor ~ Temperature+pH, larvae.size, mean) 
+aggregate(MinFeret.cor ~ Temperature+pH, larvae.size, mean)
+hist(larvae.size$MaxFeret.cor, breaks = 100)
+hist(larvae.size$MinFeret.cor, breaks = 100)
+```
+
+#### How many samples do I have size data for, per group? 
+
+The number of larval samples, which were collect from volitional spawn w/n treatments, is unequal among treatments. Unbalanced design (need to account for this in stats) 
+
+Cohort + Temperature + pH 
+```{r}
+larvae.size %>%
+          group_by(Population, Temperature, pH) %>%
+          summarise(count= n_distinct(Sample))
+```
+
+Just Temperature + pH (all cohorts combined - how i will assess)
+
+```{r}
+
+larvae.size %>%
+          group_by(Temperature, pH) %>%
+          summarise(count= n_distinct(Sample))
+```
+
+
+### Generate initial plots  
+
+Inspect all larval length data (not yet summarized for each larval group)
+
+- Shell width ~ shell height, color coded by parental treatment 
+- Shell width by parental treatment within each cohort 
+- Shell height by parental treatment within each cohort 
+
+```{r, echo=FALSE}
+print(max.min.all <- ggplot(subset(larvae.size, MinFeret.cor>80), aes(x=MinFeret, y=MaxFeret)) + geom_point(size=.5, aes(color=Temperature:pH)) + theme_bw(base_size = 12) + labs(title="Larval shell size upon release", y=("Max Feret Diameter (~width), (um)"), x="Min Feret Diameter (~height),") + theme(text = element_text(size = 14)) + scale_color_manual(values=c("blue", "forestgreen", "orange", "red")))
+
+print(max.all <- ggplot(larvae.size, aes(x=Population, y=MaxFeret)) + geom_boxplot(aes(color=Temperature:pH)) + theme_bw(base_size = 12) + labs(title="Larval shell width (Max Feret) by cohort & treatment", y=("Max. Feret Diameter (um)"), x="Cohort") + theme(text = element_text(size = 14)) + scale_color_manual(values=c("blue", "forestgreen", "orange", "red")))
+
+print(min.all <- ggplot(larvae.size, aes(x=Population, y=MinFeret)) + geom_boxplot(aes(color=Temperature:pH)) + theme_bw(base_size = 12) + labs(title="Larval shell height (Min Feret) by cohort & treatment", y=("Min. Feret Diameter (um)"), x="Cohort") + theme(text = element_text(size = 14)) + scale_color_manual(values=c("blue", "forestgreen", "orange", "red")))
+```
+
+#### Save plots 
+
+```{r, message=FALSE, results=FALSE}
+png("../plots/larval-max-min-all.png")
+max.min.all
+dev.off()
+png("../plots/larval-max-feret-all.png")
+max.all
+dev.off()
+png("../plots/larval-min-feret-all.png")
+min.all
+dev.off()
+```
+
+####  Summarize mean shell height and width for each larval sample   
+
+```{r}
+larvae.size.mean <- larvae.size %>%
+          group_by(Population, Temperature, pH, Sample) %>%
+          summarise(MaxFeret.mean=mean(MaxFeret.cor), MinFeret.mean=mean(MinFeret.cor), date=median(DateCollected))
+```
+
+#### Generate plots with average length by parental treatment 
+
+```{r, echo=FALSE}
+print(min.mean <- ggplot(larvae.size.mean, aes(x=Temperature:pH, y=MaxFeret.mean)) + geom_boxplot() + geom_jitter(width=0.15, size=2, aes(color=Population)) + theme_bw(base_size = 14) + labs(title="Mean shell width, by treatment & cohort", y=("size (um)"), x="Treatment") + theme(text = element_text(size = 16)) + scale_color_manual(values=c("#4daf4a","#377eb8","#984ea3","#e41a1c")))
+
+print(max.mean <- ggplot(larvae.size.mean, aes(x=Temperature:pH, y=MinFeret.mean)) + geom_boxplot() + geom_jitter(width=0.15, size=2, aes(color=Population)) + theme_bw(base_size = 14) + labs(title="Mean shell height, by treatment & cohort", y=("size (um)"), x="Treatment") + theme(text = element_text(size = 16)) + scale_color_manual(values=c("#4daf4a","#377eb8","#984ea3","#e41a1c")))
+
+print(max.mean.cohort <- ggplot(larvae.size.mean, aes(x=Population, y=MaxFeret.mean, color=Temperature:pH)) + geom_point(shape=8, size=2, position = position_jitterdodge(jitter.width = 0.35)) + geom_boxplot() + theme_bw(base_size = 14) + labs(title="Mean shell width, by treatment & cohort", y=("size (um)"), x="Cohort") + theme(text = element_text(size = 16)) + scale_color_manual(values=c("blue", "forestgreen", "orange", "red")))
+
+print(max.mean.date <- ggplot(larvae.size.mean, aes(x=date, y=MaxFeret.mean)) + geom_jitter(width=0.15, size=2, aes(color=Temperature:pH)) + theme_bw(base_size = 14) + labs(title="Mean shell width, by collection date and treatment", y=("size (um)"), x="Date collected") + theme(text = element_text(size = 16)) + scale_color_manual(values=c("blue", "forestgreen", "orange", "red")))
+```
+
+#### Save plots 
+
+```{r, message=FALSE, results=FALSE}
+png("../plots/larval-max-feret-mean.png")
+min.mean
+dev.off()
+png("../plots/larval-min-feret-mean.png")
+max.mean
+dev.off()
+png("../plots/larval-max-feret-mean-cohort.png")
+max.mean.cohort
+dev.off()
+png("../plots/larval-max-feret-mean-date.png")
+max.mean.date
+dev.off()
+```
+
+## Statistical analyses
+
+Test for length differences among parental temp, pH treats 
+
+NOTE: unbalanced design, so need to use either Type II or Type III SS. See nice explanation here:  [https://www.r-bloggers.com/anova-%E2%80%93-type-iiiiii-ss-explained/](https://www.r-bloggers.com/anova-%E2%80%93-type-iiiiii-ss-explained/)
+
+####  Test Max. Feret Diameter (best estimate for larval width)
+
+Check ANOVA assumptions 
+
+```{r}
+hist(larvae.size.mean$MaxFeret.mean)
+shapiro.test(larvae.size.mean$MaxFeret.mean)
+bartlett.test(MaxFeret.mean ~ pH, data=larvae.size.mean)
+bartlett.test(MaxFeret.mean ~ Temperature, data=larvae.size.mean)
+```
+
+Test for sign. differences among parental treatments using 
+
+```{r}
+anova(lm(MaxFeret.mean ~ Temperature + pH + Temperature:pH, data=larvae.size.mean)) #no interaction. Assess using type II sums of squares, where I look at effects of pH and temperature after controlling for the other factor 
+Anova(lm(MaxFeret.mean ~ Temperature*pH, data=larvae.size.mean), type=2) #both sign. 
+summary(lm(MaxFeret.mean ~ Temperature+pH, data=larvae.size.mean)) # Fit not great, though 
+```
+
+
+Try mixed effect model, with Population as random effect
+
+```{r}
+display(lmer(MaxFeret.mean ~ Temperature*pH + (1|Population), data=larvae.size.mean))
+Anova(lmer(MaxFeret.mean ~ Temperature*pH + (1|Population), data=larvae.size.mean), type=2)
+
+display(lmer(MaxFeret.mean ~ Temperature+pH+ (1|Population), data=larvae.size.mean)) 
+Anova(lmer(MaxFeret.mean ~ Temperature+pH + (1|Population), data=larvae.size.mean), type=2) #with Pop as random effect and using type II SS, still sign. influence of temp and pH 
+```
+
+#### Test min Feret Diameter (best estimate for larval height)
+
+```{r}
+hist(larvae.size.mean$MinFeret.mean)
+shapiro.test(larvae.size.mean$MinFeret.mean)
+bartlett.test(MinFeret.mean ~ pH, data=larvae.size.mean)
+bartlett.test(MinFeret.mean ~ Temperature, data=larvae.size.mean)
+anova(lm(MinFeret.mean ~ Temperature + pH + Temperature:pH, data=larvae.size.mean)) #no interaction. Assess using type II sums of squares, where I look at effects of pH and temperature after controlling for the other factor 
+Anova(lm(MinFeret.mean ~ Temperature*pH, data=larvae.size.mean), type=2) #both sign. 
+summary(lm(MinFeret.mean ~ Temperature+pH, data=larvae.size.mean)) # Fit not great, though 
+
+```
+
+Try mixed effect model, with Population as random effect
+
+```{r}
+display(lmer(MinFeret.mean ~ Temperature*pH + (1|Population), data=larvae.size.mean))
+Anova(lmer(MinFeret.mean ~ Temperature*pH + (1|Population), data=larvae.size.mean), type=2)
+display(lmer(MinFeret.mean ~ Temperature+pH+ (1|Population), data=larvae.size.mean)) 
+Anova(lmer(MinFeret.mean ~ Temperature+pH + (1|Population), data=larvae.size.mean), type=2) #with Pop as random effect and using type II SS, still sign. influence of temp and pH 
+
+```
+
+#### Test sign. diff among cohorts only 
+
+```{r}
+summary(aov(MinFeret.mean ~ Population, data=larvae.size.mean)) #no 
+summary(aov(MaxFeret.mean ~ Population, data=larvae.size.mean)) #no 
+```
+
+### Check out larval sizes for samples I already sequenced last year
+
+```{r}
+quant2018 <-  as.factor(c(41, 26, 32, 10, 48, 77)) #sample numbers for larvae already sequenced (only n=3 per treat)
+quant2018 <- larvae.size[larvae.size$Sample %in% quant2018,]
+hist(quant2018$MaxFeret)
+shapiro.test(log(quant2018$MaxFeret))
+ggplot(quant2018, aes(x=Temperature:pH, y=MaxFeret)) + geom_boxplot() + geom_jitter() + theme_bw(base_size = 14) + labs(title="Larval shell  by treatment", y=("size (um)"), x="Treatment") + theme(text = element_text(size = 16)) 
+kruskal.test(quant2018$MaxFeret, g = quant2018$pH) #sign. different - 10-low larger.  
+```
+
+
