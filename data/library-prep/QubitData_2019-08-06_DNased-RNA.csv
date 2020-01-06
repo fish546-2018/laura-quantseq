@@ -1,0 +1,65 @@
+Run ID,Sample,Sample,Test Date,Qubit® tube conc.,Units,Original sample conc.,Units,Sample Volume (µL),Dilution Factor,Std 1 RFU,Std 2 RFU,Std 3 RFU,Excitation,Emission,Green RFU,Far Red RFU
+2019-08-15_162320,RNA High sensitivity,Standard 2,8/15/19 16:23,510,ng/mL,102,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1552.78
+2019-08-15_161026,RNA High sensitivity,565,8/15/19 16:22,156,ng/mL,31.2,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,587.24
+2019-08-15_161026,RNA High sensitivity,564,8/15/19 16:22,760,ng/mL,152,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2051.62
+2019-08-15_161026,RNA High sensitivity,563,8/15/19 16:22,235,ng/mL,47,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,832.25
+2019-08-15_161026,RNA High sensitivity,562,8/15/19 16:21,630,ng/mL,126,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1806.33
+2019-08-15_161026,RNA High sensitivity,554,8/15/19 16:21,940,ng/mL,188,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2344.25
+2019-08-15_161026,RNA High sensitivity,553,8/15/19 16:21,Out of range,ng/mL,Out of range,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2592.89
+2019-08-15_161026,RNA High sensitivity,551,8/15/19 16:21,482,ng/mL,96.4,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1488.74
+2019-08-15_161026,RNA High sensitivity,543,8/15/19 16:21,810,ng/mL,162,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2139.77
+2019-08-15_161026,RNA High sensitivity,533,8/15/19 16:21,32.6,ng/mL,6.52,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,178.62
+2019-08-15_161026,RNA High sensitivity,532,8/15/19 16:20,468,ng/mL,93.6,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1454.6
+2019-08-15_161026,RNA High sensitivity,529,8/15/19 16:20,284,ng/mL,56.8,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,976.44
+2019-08-15_161026,RNA High sensitivity,527,8/15/19 16:20,620,ng/mL,124,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1786.75
+2019-08-15_161026,RNA High sensitivity,526,8/15/19 16:20,690,ng/mL,138,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1930.13
+2019-08-15_161026,RNA High sensitivity,525,8/15/19 16:20,700,ng/mL,140,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1939.92
+2019-08-15_161026,RNA High sensitivity,524,8/15/19 16:20,315,ng/mL,63,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1062.88
+2019-08-15_161026,RNA High sensitivity,523,8/15/19 16:20,357,ng/mL,71.4,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1177.07
+2019-08-15_161026,RNA High sensitivity,46,8/15/19 16:19,493,ng/mL,98.6,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1513.89
+2019-08-15_161026,RNA High sensitivity,43,8/15/19 16:19,780,ng/mL,156,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2076.91
+2019-08-15_161026,RNA High sensitivity,492,8/15/19 16:19,413,ng/mL,82.6,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1321.94
+2019-08-15_161026,RNA High sensitivity,490,8/15/19 16:19,Out of range,ng/mL,Out of range,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2563.46
+2019-08-15_161026,RNA High sensitivity,489,8/15/19 16:19,340,ng/mL,68,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1130.49
+2019-08-15_161026,RNA High sensitivity,488,8/15/19 16:19,300,ng/mL,60,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1020.6
+2019-08-15_161026,RNA High sensitivity,487,8/15/19 16:18,590,ng/mL,118,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1734.88
+2019-08-15_161026,RNA High sensitivity,486-B,8/15/19 16:18,740,ng/mL,148,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2006.82
+2019-08-15_161026,RNA High sensitivity,485,8/15/19 16:18,95.3,ng/mL,19.1,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,387.29
+2019-08-15_161026,RNA High sensitivity,483,8/15/19 16:18,495,ng/mL,99,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1518.45
+2019-08-15_161026,RNA High sensitivity,477,8/15/19 16:18,Out of range,ng/mL,Out of range,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2565
+2019-08-15_161026,RNA High sensitivity,476,8/15/19 16:18,196,ng/mL,39.2,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,713.45
+2019-08-15_161026,RNA High sensitivity,475,8/15/19 16:17,137,ng/mL,27.4,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,524.6
+2019-08-15_161026,RNA High sensitivity,474,8/15/19 16:17,386,ng/mL,77.2,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1252.8
+2019-08-15_161026,RNA High sensitivity,473,8/15/19 16:17,620,ng/mL,124,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1778.18
+2019-08-15_161026,RNA High sensitivity,453,8/15/19 16:17,980,ng/mL,196,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2403.7
+2019-08-15_161026,RNA High sensitivity,445,8/15/19 16:17,800,ng/mL,160,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2116.34
+2019-08-15_161026,RNA High sensitivity,444,8/15/19 16:16,353,ng/mL,70.6,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1165.64
+2019-08-15_161026,RNA High sensitivity,443,8/15/19 16:16,301,ng/mL,60.2,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1023.27
+2019-08-15_161026,RNA High sensitivity,434,8/15/19 16:16,315,ng/mL,63,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1062.62
+2019-08-15_161026,RNA High sensitivity,414,8/15/19 16:16,840,ng/mL,168,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2186.57
+2019-08-15_161026,RNA High sensitivity,413,8/15/19 16:16,650,ng/mL,130,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1844.94
+2019-08-15_161026,RNA High sensitivity,349,8/15/19 16:16,410,ng/mL,82,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1313.57
+2019-08-15_161026,RNA High sensitivity,348,8/15/19 16:15,272,ng/mL,54.4,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,941.99
+2019-08-15_161026,RNA High sensitivity,345,8/15/19 16:15,950,ng/mL,190,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2354.53
+2019-08-15_161026,RNA High sensitivity,344,8/15/19 16:15,125,ng/mL,25,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,486.05
+2019-08-15_161026,RNA High sensitivity,339,8/15/19 16:15,386,ng/mL,77.2,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1253.2
+2019-08-15_161026,RNA High sensitivity,338,8/15/19 16:15,408,ng/mL,81.6,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1309.1
+2019-08-15_161026,RNA High sensitivity,335,8/15/19 16:14,Out of range,ng/mL,Out of range,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2705.03
+2019-08-15_161026,RNA High sensitivity,334,8/15/19 16:14,324,ng/mL,64.8,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1086.64
+2019-08-15_161026,RNA High sensitivity,329,8/15/19 16:14,810,ng/mL,162,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2133.65
+2019-08-15_161026,RNA High sensitivity,325,8/15/19 16:14,900,ng/mL,180,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2285.03
+2019-08-15_161026,RNA High sensitivity,324,8/15/19 16:14,860,ng/mL,172,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2215.06
+2019-08-15_161026,RNA High sensitivity,321,8/15/19 16:14,740,ng/mL,148,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2007.47
+2019-08-15_161026,RNA High sensitivity,319,8/15/19 16:13,388,ng/mL,77.6,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1259.12
+2019-08-15_161026,RNA High sensitivity,317,8/15/19 16:13,Out of range,ng/mL,Out of range,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2596.46
+2019-08-15_161026,RNA High sensitivity,316,8/15/19 16:13,Out of range,ng/mL,Out of range,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2601.4
+2019-08-15_161026,RNA High sensitivity,315,8/15/19 16:13,Out of range,ng/mL,Out of range,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2632.38
+2019-08-15_161026,RNA High sensitivity,309,8/15/19 16:13,Out of range,ng/mL,Out of range,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2843.31
+2019-08-15_161026,RNA High sensitivity,306,8/15/19 16:13,680,ng/mL,136,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1906.71
+2019-08-15_161026,RNA High sensitivity,305,8/15/19 16:12,376,ng/mL,75.2,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1225.57
+2019-08-15_161026,RNA High sensitivity,304,8/15/19 16:12,1000,ng/mL,200,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2434.89
+2019-08-15_161026,RNA High sensitivity,299,8/15/19 16:12,252,ng/mL,50.4,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,882.48
+2019-08-15_161026,RNA High sensitivity,298,8/15/19 16:12,910,ng/mL,182,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2299.34
+2019-08-15_161026,RNA High sensitivity,295,8/15/19 16:12,178,ng/mL,35.6,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,656.41
+2019-08-15_161026,RNA High sensitivity,294,8/15/19 16:12,550,ng/mL,110,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,1646
+2019-08-15_161026,RNA High sensitivity,291,8/15/19 16:11,790,ng/mL,158,ng/µL,1,200,80.33,1529.23,,Red,Far Red,,2102.73
