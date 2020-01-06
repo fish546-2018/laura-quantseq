@@ -16,12 +16,13 @@ library(ggplot2)
 library(dplyr)
 library(car)
 library(arm)
+library(here)
 ```
 
 #### Load data and reformat 
 
 ```{r}
-larvae.size <- read.csv("../data/2019-08_new-larvae-measurements.csv", header=T, stringsAsFactors = F)
+larvae.size <- read.csv(here("data", "2019-08_new-larvae-measurements.csv"), header=T, stringsAsFactors = F)
 larvae.size[c("Sample", "Population", "Temperature", "pH")] <- lapply(larvae.size[c("Sample", "Population", "Temperature", "pH")], factor)
 larvae.size$DateCollected <- as.Date(larvae.size$DateCollected, format = "%m/%d/%y")
 ```
@@ -62,7 +63,6 @@ larvae.size %>%
 Just Temperature + pH (all cohorts combined - how i will assess)
 
 ```{r}
-
 larvae.size %>%
           group_by(Temperature, pH) %>%
           summarise(count= n_distinct(Sample))
@@ -83,6 +83,12 @@ print(max.min.all <- ggplot(subset(larvae.size, MinFeret.cor>80), aes(x=MinFeret
 print(max.all <- ggplot(larvae.size, aes(x=Population, y=MaxFeret)) + geom_boxplot(aes(color=Temperature:pH)) + theme_bw(base_size = 12) + labs(title="Larval shell width (Max Feret) by cohort & treatment", y=("Max. Feret Diameter (um)"), x="Cohort") + theme(text = element_text(size = 14)) + scale_color_manual(values=c("blue", "forestgreen", "orange", "red")))
 
 print(min.all <- ggplot(larvae.size, aes(x=Population, y=MinFeret)) + geom_boxplot(aes(color=Temperature:pH)) + theme_bw(base_size = 12) + labs(title="Larval shell height (Min Feret) by cohort & treatment", y=("Min. Feret Diameter (um)"), x="Cohort") + theme(text = element_text(size = 14)) + scale_color_manual(values=c("blue", "forestgreen", "orange", "red")))
+
+#Check circularity to ensure measurements were not biased by some angled groups of larvae 
+print(circ.all <- ggplot(larvae.size, aes(x=Population, y=Circularity)) + geom_boxplot(aes(color=Temperature:pH)) + theme_bw(base_size = 12) + labs(title="Circularity by cohort & treatment", y=("Min. Feret Diameter (um)"), x="Cohort") + theme(text = element_text(size = 14)) + scale_color_manual(values=c("blue", "forestgreen", "orange", "red")))
+
+#Check circularity to ensure measurements were not biased by some angled groups of larvae 
+print(cohort.all <- ggplot(larvae.size, aes(x=Population, y=MaxFeret)) + geom_boxplot(aes(color=Population)) + theme_bw(base_size = 12) + labs(title="Shell width upon release, by cohort", y=("Max. Feret Diameter (um)"), x="Cohort") + theme(text = element_text(size = 14)) + scale_color_manual(values=c("blue", "forestgreen", "orange", "red")))
 ```
 
 #### Save plots 
@@ -104,15 +110,19 @@ dev.off()
 ```{r}
 larvae.size.mean <- larvae.size %>%
           group_by(Population, Temperature, pH, Sample) %>%
-          summarise(MaxFeret.mean=mean(MaxFeret.cor), MinFeret.mean=mean(MinFeret.cor), date=median(DateCollected))
+          summarise(MaxFeret.mean=mean(MaxFeret.cor), MinFeret.mean=mean(MinFeret.cor),
+                    Circ.mean=mean(Circularity),  date=median(DateCollected))
 ```
 
 #### Generate plots with average length by parental treatment 
 
 ```{r, echo=FALSE}
-print(min.mean <- ggplot(larvae.size.mean, aes(x=Temperature:pH, y=MaxFeret.mean)) + geom_boxplot() + geom_jitter(width=0.15, size=2, aes(color=Population)) + theme_bw(base_size = 14) + labs(title="Mean shell width, by treatment & cohort", y=("size (um)"), x="Treatment") + theme(text = element_text(size = 16)) + scale_color_manual(values=c("#4daf4a","#377eb8","#984ea3","#e41a1c")))
+print(max.mean <- ggplot(larvae.size.mean, aes(x=Temperature:pH, y=MaxFeret.mean)) + geom_boxplot() + geom_jitter(width=0.15, size=2, aes(color=Population)) + theme_bw(base_size = 14) + labs(title="Mean shell width, by treatment & cohort", y=("size (um)"), x="Treatment") + theme(text = element_text(size = 16)) + scale_color_manual(values=c("#4daf4a","#377eb8","#984ea3","#e41a1c")))
 
-print(max.mean <- ggplot(larvae.size.mean, aes(x=Temperature:pH, y=MinFeret.mean)) + geom_boxplot() + geom_jitter(width=0.15, size=2, aes(color=Population)) + theme_bw(base_size = 14) + labs(title="Mean shell height, by treatment & cohort", y=("size (um)"), x="Treatment") + theme(text = element_text(size = 16)) + scale_color_manual(values=c("#4daf4a","#377eb8","#984ea3","#e41a1c")))
+print(min.mean <- ggplot(larvae.size.mean, aes(x=Temperature:pH, y=MinFeret.mean)) + geom_boxplot() + geom_jitter(width=0.15, size=2, aes(color=Population)) + theme_bw(base_size = 14) + labs(title="Mean shell height, by treatment & cohort", y=("size (um)"), x="Treatment") + theme(text = element_text(size = 16)) + scale_color_manual(values=c("#4daf4a","#377eb8","#984ea3","#e41a1c")))
+
+# quality control check, to ensure larvae were not angled when imaged/measured 
+print(circ.mean <- ggplot(larvae.size.mean, aes(x=Temperature:pH, y=Circ.mean)) + geom_boxplot() + geom_jitter(width=0.15, size=2, aes(color=Population)) + theme_bw(base_size = 14) + labs(title="Circularity by treatment & cohort", y=("size (um)"), x="Treatment") + theme(text = element_text(size = 16)) + scale_color_manual(values=c("#4daf4a","#377eb8","#984ea3","#e41a1c")))
 
 print(max.mean.cohort <- ggplot(larvae.size.mean, aes(x=Population, y=MaxFeret.mean, color=Temperature:pH)) + geom_point(shape=8, size=2, position = position_jitterdodge(jitter.width = 0.35)) + geom_boxplot() + theme_bw(base_size = 14) + labs(title="Mean shell width, by treatment & cohort", y=("size (um)"), x="Cohort") + theme(text = element_text(size = 16)) + scale_color_manual(values=c("blue", "forestgreen", "orange", "red")))
 
@@ -159,6 +169,8 @@ Test for sign. differences among parental treatments using
 anova(lm(MaxFeret.mean ~ Temperature + pH + Temperature:pH, data=larvae.size.mean)) #no interaction. Assess using type II sums of squares, where I look at effects of pH and temperature after controlling for the other factor 
 Anova(lm(MaxFeret.mean ~ Temperature*pH, data=larvae.size.mean), type=2) #both sign. 
 summary(lm(MaxFeret.mean ~ Temperature+pH, data=larvae.size.mean)) # Fit not great, though 
+TukeyHSD(aov(MaxFeret.mean ~ Temperature*pH, data=larvae.size.mean), type=2) #both sign. 
+
 ```
 
 
@@ -182,6 +194,7 @@ bartlett.test(MinFeret.mean ~ Temperature, data=larvae.size.mean)
 anova(lm(MinFeret.mean ~ Temperature + pH + Temperature:pH, data=larvae.size.mean)) #no interaction. Assess using type II sums of squares, where I look at effects of pH and temperature after controlling for the other factor 
 Anova(lm(MinFeret.mean ~ Temperature*pH, data=larvae.size.mean), type=2) #both sign. 
 summary(lm(MinFeret.mean ~ Temperature+pH, data=larvae.size.mean)) # Fit not great, though 
+TukeyHSD(aov(MinFeret.mean ~ Temperature*pH, data=larvae.size.mean), type=2) #both sign. 
 
 ```
 
@@ -213,4 +226,36 @@ ggplot(quant2018, aes(x=Temperature:pH, y=MaxFeret)) + geom_boxplot() + geom_jit
 kruskal.test(quant2018$MaxFeret, g = quant2018$pH) #sign. different - 10-low larger.  
 ```
 
+Plots for PCSGA 2019 
+
+```{r}
+set.seed(1)
+print(min.mean <- ggplot(larvae.size.mean, aes(x=Temperature:pH, y=MinFeret.mean)) + geom_boxplot() + geom_jitter(width=0.2, size=2.5) + theme_bw(base_size = 15) + labs(title="Mean shell height by parental winter treatment", y=("size (um)")) + theme(text = element_text(size = 16), axis.text.x=(element_text(size=15))) + scale_x_discrete(labels=c("6°C\nAmbient pH", "6°C\nLow pH", "10°C\nAmbient pH", "10°C\nLow pH"), name=element_blank()))
+
+set.seed(1)
+print(min.mean <- ggplot(larvae.size.mean, aes(x=Temperature:pH, y=MinFeret.mean)) + geom_boxplot() + geom_jitter(width=0.2, size=2.5, aes(color=Population)) + theme_bw(base_size = 15) + labs(title="Mean shell height by parental winter treatment", y=("size (um)")) + theme(text = element_text(size = 16), legend.position = "none", axis.text.x=(element_text(size=15))) + scale_x_discrete(labels=c("6°C\nAmbient pH", "6°C\nLow pH", "10°C\nAmbient pH", "10°C\nLow pH"), name=element_blank()) + scale_color_manual(values=c("#4daf4a","#377eb8","#984ea3","#e41a1c")))
+```
+
+Plots for WSG Poster 
+
+```{r}
+pdf(here("plots/", "larval-width-WSG.pdf"), width = 6, height = 8)
+print(ggplot(larvae.size.mean, aes(x=Temperature:pH, y=MinFeret.mean, fill=Temperature:pH)) + 
+          geom_boxplot(width=0.5, position = position_dodge(width = .55)) +
+          geom_point(size=2.5, color="gray20", aes(shape=Population, group=Temperature:pH),
+                     position=position_jitterdodge(jitter.width = 1.75, jitter.height = .1, dodge.width = 0.5)) +
+                    scale_shape_manual(values=c(17, 15, 19, 8)) + 
+          scale_fill_manual(values=c('#d1e5f0','#67a9cf','#fddbc7', '#ef8a62'), name="Parental Treatment",
+                            label=c("6°C / Ambient", "6°C / High", "10°C / Ambient","10°C / High")) + 
+                    theme_bw(base_size = 15) + 
+          labs(title="", y=(""), x=("")) + 
+          theme(text = element_text(size = 18), axis.text.x=(element_blank()), 
+                axis.ticks = element_blank(), panel.grid.minor = element_blank(), 
+                panel.grid.major.x = element_blank(), panel.grid.major.y = element_blank(), 
+                legend.position = "none") + 
+                scale_y_continuous(breaks=scales::pretty_breaks(n = 5), limits=c(min=145,max=173)))
+dev.off()
+
+
+```
 
