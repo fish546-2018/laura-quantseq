@@ -5,14 +5,10 @@
 *.fq
 *.fastq
 *.fastq.gz
-<<<<<<< HEAD
-<<<<<<< HEAD
 *.DS_Store*
-=======
-=======
+*.DS_Store
 *.bam
 .DS_Store
->>>>>>> 0f254ba2d52d98afc59036eb1d2e1488b33eb82f
 *.fasta
 *.fasta.gz
 *.bam
@@ -57,3 +53,8 @@ results/transrate_results/read-evaluated/20181029-olurida-gonad-assembly/2018102
 ./results/trinity/20181029-olurida-gonad-trimnorm-left.fq
 ./results/trinity/20181029-olurida-gonad-trimnorm-right.fq
 ./data/2020-04-21_QuantSeq-data
+*.bt2
+*.fa
+*.fai
+*.fasta.kallisto_idx
+./data/larvae-size/measuring-larvae.mp4ß
